@@ -9,6 +9,9 @@
         <Logger name="surface" level="info" additivity="false">
             <AppenderRef ref="LogToConsole"/>
         </Logger>
+        <Logger name="ui" level="info" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+        </Logger>
         <Root level="error">
             <AppenderRef ref="LogToConsole"/>
         </Root>
