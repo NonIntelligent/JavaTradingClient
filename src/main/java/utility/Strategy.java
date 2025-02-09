@@ -1,3 +1,5 @@
+package utility;
+
 public final class Strategy {
     private Strategy(){}
 

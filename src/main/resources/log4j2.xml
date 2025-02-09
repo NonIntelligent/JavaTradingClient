@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
     <Appenders>
-        <Console name="LogToConsole" target="SYSTEM_OUT">
+        <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
     </Appenders>
     <Loggers>
         <Logger name="surface" level="info" additivity="false">
-            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="Console"/>
         </Logger>
-        <Logger name="ui" level="info" additivity="false">
-            <AppenderRef ref="LogToConsole"/>
+        <Logger name="UI" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="API" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
         </Logger>
         <Root level="error">
-            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="Console"/>
         </Root>
     </Loggers>
 </Configuration>
