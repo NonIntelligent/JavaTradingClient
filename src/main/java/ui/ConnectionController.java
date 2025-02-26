@@ -8,12 +8,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
+import utility.Settings;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 // Handles UI request for connecting to the API and disconnecting from the session
-public class ConnectionController implements Initializable {
+public class ConnectionController extends UIController {
     @FXML
     ChoiceBox<String> fx_brokerApiSelection;
     @FXML
@@ -24,7 +25,6 @@ public class ConnectionController implements Initializable {
     Text fx_status;
 
     private String[] brokers = {"Trading212"};
-    private ApiHandler _apiHandler;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -40,21 +40,23 @@ public class ConnectionController implements Initializable {
     *
     * */
     private void connectToApi(ActionEvent event){
-        String key = fx_apiKey.getText();
+        String key = Settings.getInstance().getApiKey();
+        if (key != null) {
+            ApiHandler.getAccountCash(key, fx_brokerApiSelection.getValue());
+            return;
+        }
 
+        key = fx_apiKey.getText();
         // TODO display error on screen to input API Key
         if (key.isEmpty()) return;
 
         if (fx_brokerApiSelection.getValue().isEmpty()) return;
 
-
+        // Save key
+        Settings.getInstance().setSetting("API-KEY1", key);
 
         // TODO use broker handler and connect to API
-        _apiHandler.connectToApi(key, fx_brokerApiSelection.getValue());
-    }
-
-    public void setBrokerHandler(ApiHandler apiHandler){
-        _apiHandler = apiHandler;
+        ApiHandler.getAccountCash(key, fx_brokerApiSelection.getValue());
     }
 
 }

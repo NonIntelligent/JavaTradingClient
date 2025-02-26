@@ -1,30 +1,29 @@
 package core;
 
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ui.ConnectionController;
-import ui.FXManager;
+import ui.FXLoading;
+import utility.Settings;
 
 public class App extends Application {
-    private final Logger logUI = LogManager.getLogger("UI");
+    private static final Logger logUI = LogManager.getLogger("UI");
     private Manager manager;
-    private FXManager fxManager;
+    private FXLoading fxLoading;
 
     @Override
     public void start(Stage stage) throws Exception {
         manager = new Manager();
-        fxManager = new FXManager(stage);
+        Settings settings = Settings.getInstance();
+        fxLoading = new FXLoading();
+        fxLoading.LoadLandingPage(stage);
     }
 
     @Override
     public void stop(){
         logUI.info("Application is stopping");
+        ApiHandler.shutdown();
         // Cleanup
     }
 

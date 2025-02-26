@@ -10,49 +10,91 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
-public class ApiHandler {
-    private final Logger _log = LogManager.getLogger("API");
-    private CloseableHttpClient _httpClient;
+public final class ApiHandler {
+    private static final Logger log = LogManager.getLogger("API");
+    private static final CloseableHttpClient httpClient = HttpClients.createDefault();
 
 
-    public ApiHandler(){
-        try (CloseableHttpClient cl = HttpClients.createDefault()) {
-        _httpClient = cl;
-
-        } catch (IOException e) {
-            _log.error("Could not create Http client. Terminating program", e);
-        };
-
-
+    private ApiHandler() {
     }
 
-    public void connectToApi(String apiKey, String broker) {
+    public static void connectToApi(String apiKey, String broker) {
         broker = "https://demo.trading212.com";
-        String request = broker + "/api/v0/equity/metadata/exchanges";
+        String request = broker + "/api/v0/equity/portfolio";
         HttpGet httpGet = new HttpGet(request);
         httpGet.addHeader("Authorization", apiKey);
 
         Result result = null;
         try {
-            CloseableHttpClient cl = HttpClients.createDefault();
-            result = cl.execute(httpGet, response -> {
-                _log.info(httpGet + "->" + new StatusLine(response));
+            result = httpClient.execute(httpGet, response -> {
+                log.info("{}->{}", httpGet, new StatusLine(response));
                 return new Result(response.getCode(), EntityUtils.toString(response.getEntity()));
             });
+
         } catch (IOException e) {
-            _log.error("Could not execute GET request.", e);
+            log.error("Could not execute GET request.", e);
         }
 
-        _log.info(result.content);
+        log.info(result.content);
     }
 
-    static class Result {
-        final int status;
-        final String content;
+    public static void getAccountCash(String apiKey, String broker) {
+        broker = "https://demo.trading212.com";
+        String request = broker + "/api/v0/equity/account/cash";
+        HttpGet httpGet = new HttpGet(request);
+        httpGet.addHeader("Authorization", apiKey);
 
-        Result(int status, String content){
-            this.status = status;
-            this.content = content;
+        Result result = null;
+        try {
+            result = httpClient.execute(httpGet, response -> {
+                log.info("{}->{}", httpGet, new StatusLine(response));
+                return new Result(response.getCode(), EntityUtils.toString(response.getEntity()));
+            });
+
+        } catch (IOException e) {
+            log.error("Could not execute GET request.", e);
+        }
+
+        log.info(result.content);
+    }
+
+
+    public static void shutdown() {
+        try {
+            httpClient.close();
+        } catch (IOException e) {
+            log.error("Problem with closing Http client.", e);
+        }
+    }
+
+    record Result(int status, String content) {
+
+        public String response() {
+            String response = "";
+            switch (status) {
+                case 200:
+                    response = "OK";
+                    break;
+                case 400:
+                    response = "Failed validation, bad request";
+                    break;
+                case 401:
+                    response = "Bad";
+                    break;
+                case 403:
+                    response = "Forbidden action, missing permissions";
+                    break;
+                case 408:
+                    response = "Timed out";
+                    break;
+                case 429:
+                    response = "Rate limited action, performed too soon";
+                    break;
+                default:
+                    response = "Unknown http result";
+            }
+
+            return response;
         }
     }
 }

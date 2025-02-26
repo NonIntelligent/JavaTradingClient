@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class LandingController implements Initializable {
+public class LandingController extends UIController {
     @FXML private MenuBar fx_titleMenu;
     @FXML private VBox fx_tickers;
     private Stage mainStage;
@@ -28,21 +28,8 @@ public class LandingController implements Initializable {
     }
 
     @FXML
-    private void openConnectionMenu(ActionEvent e) throws IOException {
-
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/connection.fxml"));
-
-        Parent root = loader.load();
-
-        Stage connection = new Stage();
-        connection.setTitle("Connect to broker");
-        ConnectionController controller = loader.getController();
-        ApiHandler h = new ApiHandler();
-        controller.setBrokerHandler(h);
-        Scene scene = new Scene(root);
-        connection.setScene(scene);
-
-        connection.show();
+    private void openConnectionMenu(ActionEvent e) {
+        fxLoaderRef.LoadConnectionPage();
     }
 
     @FXML
@@ -50,6 +37,5 @@ public class LandingController implements Initializable {
         mainStage = (Stage) fx_titleMenu.getScene().getWindow();
         mainStage.close();
     }
-
 
 }

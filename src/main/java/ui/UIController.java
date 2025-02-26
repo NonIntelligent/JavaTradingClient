@@ -2,6 +2,10 @@ package ui;
 
 import javafx.fxml.Initializable;
 
-public interface UIController extends Initializable {
+public abstract class UIController implements Initializable {
+    protected FXLoading fxLoaderRef = null;
 
+    public void setFxLoader(FXLoading fxLoader){
+        this.fxLoaderRef = fxLoader;
+    }
 }
