@@ -1,6 +1,7 @@
 package ui;
 
 import core.ApiHandler;
+import core.Manager;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -20,7 +21,7 @@ public class FXLoading {
 
     }
 
-    public void LoadLandingPage(Stage appStage) {
+    public void LoadLandingPage(Stage appStage, Manager manager) {
         this.appWindow = appStage;
 
         FXMLLoader application = new FXMLLoader(getClass().getResource("/application.fxml"));
@@ -33,6 +34,7 @@ public class FXLoading {
 
         UIController controller = application.getController();
         controller.setFxLoader(this);
+        controller.setManager(manager);
 
         appWindow.setTitle("Java Market Trader");
         appWindow.setScene(new Scene(root));
@@ -62,6 +64,10 @@ public class FXLoading {
         connection.setScene(scene);
 
         connection.show();
+    }
+
+    public void showAllTickers() {
+
     }
 
 }

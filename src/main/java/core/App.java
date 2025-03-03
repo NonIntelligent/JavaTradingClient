@@ -17,7 +17,13 @@ public class App extends Application {
         manager = new Manager();
         Settings settings = Settings.getInstance();
         fxLoading = new FXLoading();
-        fxLoading.LoadLandingPage(stage);
+        fxLoading.LoadLandingPage(stage, manager);
+
+        manager.beginProcessing();
+
+        // TODO create account class to hold api key and broker data.
+        // Possibly use a builder to create the class and setup it's methods to call.
+
     }
 
     @Override
