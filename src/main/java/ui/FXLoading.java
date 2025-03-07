@@ -1,7 +1,7 @@
 package ui;
 
-import core.ApiHandler;
-import core.Manager;
+import broker.Instrument;
+import core.App;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -11,18 +11,21 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class FXLoading {
     private static final Logger logUI = LogManager.getLogger("UI");
+    private final App app;
+    private Stage mainWindow = null;
+    private HashMap<String, UIController> controllers;
 
-    Stage appWindow = null;
-
-    public FXLoading() {
-
+    public FXLoading(App app) {
+        this.app = app;
+        controllers = new HashMap<>(2);
     }
 
-    public void LoadLandingPage(Stage appStage, Manager manager) {
-        this.appWindow = appStage;
+    public void LoadLandingPage(Stage appStage) {
+        this.mainWindow = appStage;
 
         FXMLLoader application = new FXMLLoader(getClass().getResource("/application.fxml"));
         Parent root = null;
@@ -34,18 +37,18 @@ public class FXLoading {
 
         UIController controller = application.getController();
         controller.setFxLoader(this);
-        controller.setManager(manager);
+        controllers.put("Landing", controller);
 
-        appWindow.setTitle("Java Market Trader");
-        appWindow.setScene(new Scene(root));
-        appWindow.setOnCloseRequest(windowEvent -> {
+        mainWindow.setTitle("Java Market Trader");
+        mainWindow.setScene(new Scene(root));
+        mainWindow.setOnCloseRequest(windowEvent -> {
             logUI.info("Stage is closing");
             // Cleanup
             Platform.exit();
         });
 
         logUI.info("UI Launched");
-        appWindow.show();
+        mainWindow.show();
     }
 
     public void LoadConnectionPage() {
@@ -58,16 +61,26 @@ public class FXLoading {
             return;
         }
 
+        UIController controller = loader.getController();
+        controller.setFxLoader(this);
+        controllers.put("Connection", controller);
+
         Stage connection = new Stage();
         connection.setTitle("Connect to broker");
         Scene scene = new Scene(root);
         connection.setScene(scene);
 
+        connection.setOnCloseRequest(windowEvent -> {
+            logUI.info("Connection stage is closing");
+            controllers.remove("Connection");
+        });
+
         connection.show();
     }
 
-    public void showAllTickers() {
-
+    public void showAllTickers(Instrument[] instruments) {
+        LandingController landing = (LandingController) controllers.get("Landing");
+        landing.displayTickers(instruments);
     }
 
 }

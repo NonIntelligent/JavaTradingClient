@@ -1,20 +1,25 @@
 package core;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import broker.Instrument;
 import utility.Settings;
-import utility.Timing;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Manager {
+    private final App app;
+    private ObjectMapper mapper;
+    public List<String> instruments;
 
-    public ArrayList<String> instruments;
-
-    Manager() {
+    Manager(App app) {
+        this.app = app;
         instruments = new ArrayList<>(100);
-        JsonFactory factory = JsonFactory.builder()
-                .build();
+        mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, true);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public boolean isAPIKeyValid(String apiKey, String broker) {
@@ -35,7 +40,15 @@ public class Manager {
 
         /* TODO setup json parsing to organise list of instruments and send to FXLoader.
         FxLoader to LandingController to display */
-        //if (result.isOK())
+        if (result.isOK()) {
+            try {
+                Instrument[] instruments = mapper.readValue(result.content(), Instrument[].class);
+                app.updateInstruments(instruments);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
 
     }
 

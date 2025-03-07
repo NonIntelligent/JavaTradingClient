@@ -1,5 +1,6 @@
 package core;
 
+import broker.Instrument;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
@@ -14,11 +15,10 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        manager = new Manager();
+        manager = new Manager(this);
         Settings settings = Settings.getInstance();
-        fxLoading = new FXLoading();
-        fxLoading.LoadLandingPage(stage, manager);
-
+        fxLoading = new FXLoading(this);
+        fxLoading.LoadLandingPage(stage);
         manager.beginProcessing();
 
         // TODO create account class to hold api key and broker data.
@@ -37,5 +37,13 @@ public class App extends Application {
         Logger log = LogManager.getLogger("surface");
         log.info("Starting client");
         launch(args);
+    }
+
+    public void updateInstruments(Instrument[] instruments) {
+        fxLoading.showAllTickers(instruments);
+    }
+
+    public void sendDataToUI() {
+
     }
 }
