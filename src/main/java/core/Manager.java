@@ -1,22 +1,27 @@
 package core;
 
+import broker.*;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import broker.Instrument;
 import utility.Settings;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Manager {
     private final App app;
     private ObjectMapper mapper;
     public List<String> instruments;
+    public List<Account> accounts;
 
     Manager(App app) {
         this.app = app;
+        // Possibly get rid of this copy of instruments.
+        // Only UI needs to retain all the instruments to display
         instruments = new ArrayList<>(100);
+        accounts = new ArrayList<>();
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -25,18 +30,37 @@ public class Manager {
     public boolean isAPIKeyValid(String apiKey, String broker) {
         if (apiKey.equals("EMPTY")) return false;
 
-        Result result = ApiHandler.getAccountCash(apiKey, broker);
+        // TODO change to check Account Cash or other low limited rates
+        Result result = new Result(401, "TODO");
 
         return result.status() == 200;
+    }
+
+    public Account createAccount() {
+        return new Account("",null,null);
+    }
+
+    public void reloadState() {
+        // TODO load account data from saved settings
+        // i.e. load auth keys and re-create account objects
     }
 
     public void beginProcessing() {
         // TODO replace with timer to check for valid API
         // Then setup tasks and refresh data based on interval
 
+        // TODO load auth data from file if it exists, else do nothing
+        //  get broker name/enum that the api is linked to
+        //  get Account Type from connection Controller checkbox.
+        Broker broker = Broker.TRADING212;
+        AccountType type = AccountType.DEMO;
         String key = Settings.getInstance().getApiKey();
+        String apiID = "";
 
-        Result result = ApiHandler.fetchInstruments(key, "broker");
+        TradingAPI api = ApiFactory.getApi(broker, type, key, apiID);
+        Account acc = new Account(key, api, type);
+
+        Result result = acc.tradingApi.fetchInstruments();
 
         /* TODO setup json parsing to organise list of instruments and send to FXLoader.
         FxLoader to LandingController to display */

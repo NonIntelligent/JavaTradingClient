@@ -6,5 +6,4 @@ public class Instrument {
     public String shortName;
     public String ticker;
     public String type;
-
 }

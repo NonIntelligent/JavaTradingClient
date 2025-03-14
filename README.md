@@ -1,7 +1,7 @@
 # The Project
 
-A market trading client to perform algorithmic trading.
-Connect to your broker's API and perform any type of market trade manually or with the client acting as a bot applying set strategies.
+A market trading app to perform algorithmic trading.
+Connect to your trading API and perform any type of market trade manually or with the client acting as a bot, applying set strategies.
 View charts, order history and account value statistics.
 
 # Technologies

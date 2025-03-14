@@ -1,86 +1,44 @@
 package core;
 
+import broker.Broker;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicHeader;
+import org.apache.hc.core5.http.message.BufferedHeader;
 import org.apache.hc.core5.http.message.StatusLine;
+import org.apache.hc.core5.util.Args;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public final class ApiHandler {
     private static final Logger log = LogManager.getLogger("API");
     private static final CloseableHttpClient httpClient = HttpClients.createDefault();
 
-
+    // TODO Convert to regular class initialised by Manager,
+    //  and passed as dependency to TradingApi class
     private ApiHandler() {
     }
 
-    public static Result connectToApi(String apiKey, String broker) {
-        broker = "https://demo.trading212.com";
-        String request = broker + "/api/v0/equity/portfolio";
+    public static Result executeApiGetRequest(String request, ArrayList<Header> headers) throws IOException {
         HttpGet httpGet = new HttpGet(request);
-        httpGet.addHeader("Authorization", apiKey);
 
-        Result result = null;
-        try {
-            result = httpClient.execute(httpGet, response -> {
-                log.info("{}->{}", httpGet, new StatusLine(response));
-                return new Result(response.getCode(), EntityUtils.toString(response.getEntity()));
-            });
-
-        } catch (IOException e) {
-            log.error("Could not execute GET request.", e);
+        for (int i = 0; i < headers.size(); i++) {
+            httpGet.addHeader(headers.get(i));
         }
 
-        log.info(result.content());
+        Result result = httpClient.execute(httpGet, response -> {
+            log.info("{}->{}", httpGet, new StatusLine(response));
+            return new Result(response.getCode(), EntityUtils.toString(response.getEntity()));
+        });
+
         return result;
     }
-
-    public static Result fetchInstruments(String apiKey, String broker) {
-        broker = "https://demo.trading212.com";
-        String request = broker + "/api/v0/equity/metadata/instruments";
-        HttpGet httpGet = new HttpGet(request);
-        httpGet.addHeader("Authorization", apiKey);
-
-        Result result = null;
-        try {
-            result = httpClient.execute(httpGet, response -> {
-                log.info("{}->{}", httpGet, new StatusLine(response));
-                return new Result(response.getCode(), EntityUtils.toString(response.getEntity()));
-            });
-
-        } catch (IOException e) {
-            log.error("Could not execute GET request.", e);
-        }
-
-        log.info(result.content());
-        return result;
-    }
-
-    public static Result getAccountCash(String apiKey, String broker) {
-        broker = "https://demo.trading212.com";
-        String request = broker + "/api/v0/equity/account/cash";
-        HttpGet httpGet = new HttpGet(request);
-        httpGet.addHeader("Authorization", apiKey);
-
-        Result result = null;
-        try {
-            result = httpClient.execute(httpGet, response -> {
-                log.info("{}->{}", httpGet, new StatusLine(response));
-                return new Result(response.getCode(), EntityUtils.toString(response.getEntity()));
-            });
-
-        } catch (IOException e) {
-            log.error("Could not execute GET request.", e);
-        }
-
-        log.info(result.content());
-        return result;
-    }
-
 
     public static void shutdown() {
         try {
