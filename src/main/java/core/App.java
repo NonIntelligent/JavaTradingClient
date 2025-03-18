@@ -1,6 +1,8 @@
 package core;
 
-import broker.Instrument;
+import Data.Instrument;
+import Data.Order;
+import Data.Position;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +43,10 @@ public class App extends Application {
 
     public void updateInstruments(Instrument[] instruments) {
         fxLoading.showAllTickers(instruments);
+    }
+
+    public void updateOrders(Position[] positions) {
+        fxLoading.showAllOrders(positions);
     }
 
     public void sendDataToUI() {

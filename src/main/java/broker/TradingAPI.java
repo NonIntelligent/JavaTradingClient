@@ -1,7 +1,7 @@
 package broker;
 
 import core.ApiHandler;
-import core.Result;
+import Data.Result;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.message.BasicHeader;
 

@@ -1,4 +1,4 @@
-package core;
+package Data;
 
 public record Result(int status, String content) {
 

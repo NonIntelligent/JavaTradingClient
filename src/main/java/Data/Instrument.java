@@ -1,4 +1,4 @@
-package broker;
+package Data;
 
 public class Instrument {
     public String currencyCode;

@@ -1,51 +1,32 @@
 package ui;
 
-import broker.Broker;
-import broker.Instrument;
-import core.ApiHandler;
-import core.Manager;
+import Data.Instrument;
+import Data.Order;
+import Data.Position;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.scene.CacheHint;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuButton;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class LandingController extends UIController {
     @FXML private MenuBar fx_titleMenu;
-    @FXML private VBox fx_tickers;
+    @FXML private ListView<MenuButton> fx_tickers;
     @FXML private MenuButton fx_tickerExample;
+    @FXML private TableView<Position> fx_openOrders;
+    @FXML private TableView<Position> fx_closedOrders;
     private Stage mainStage;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-
-    }
-
-    public void displayTickers(Instrument[] instruments) {
-        fx_tickers.getChildren().removeFirst();
-        ListView<MenuButton> tickerListButtons =  new ListView<>();
-        for (int i = 0; i < instruments.length; i++) {
-            Instrument inst = instruments[i];
-            String text = inst.ticker + "     " + inst.type + "     " + inst.currencyCode;
-            MenuButton ticker = new MenuButton(text);
-            // TODO only for testing, change to replace existing values instead if they exist.
-            tickerListButtons.getItems().add(ticker);
-        }
-        // TODO change instrument display layout to look neater.
-        fx_tickers.getChildren().add(tickerListButtons);
+        fx_openOrders.setPlaceholder(new Label("No rows to display"));
+        var columns = fx_openOrders.getColumns();
+        columns.get(0).setCellValueFactory(new PropertyValueFactory<>("ticker"));
+        columns.get(1).setCellValueFactory(new PropertyValueFactory<>("currentPrice"));
     }
 
     @FXML
@@ -59,4 +40,30 @@ public class LandingController extends UIController {
         mainStage.close();
     }
 
+    public void updateTickers(Instrument[] instruments) {
+
+        // Populate list with new items
+        if (fx_tickers.getItems().isEmpty()) {
+            for (int i = 0; i < instruments.length; i++) {
+                Instrument inst = instruments[i];
+                String text = inst.ticker + "     " + inst.type + "     " + inst.currencyCode;
+                MenuButton ticker = new MenuButton(text);
+                // TODO only for testing, change to replace existing values instead if they exist.
+                fx_tickers.getItems().add(ticker);
+            }
+        }
+        else {
+
+        }
+    }
+
+    public void updateOrders(Position[] positions) {
+        // TODO get tableview from Orders tab and populate
+        var list = fx_openOrders.getItems();
+        // Populate list with new items
+        for (int i = 0; i < positions.length; i++) {
+            Position position = positions[i];
+            fx_openOrders.getItems().add(position);
+        }
+    }
 }

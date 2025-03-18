@@ -1,6 +1,8 @@
 package ui;
 
-import broker.Instrument;
+import Data.Instrument;
+import Data.Order;
+import Data.Position;
 import core.App;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -80,7 +82,12 @@ public class FXLoading {
 
     public void showAllTickers(Instrument[] instruments) {
         LandingController landing = (LandingController) controllers.get("Landing");
-        landing.displayTickers(instruments);
+        landing.updateTickers(instruments);
+    }
+
+    public void showAllOrders(Position[] positions) {
+        LandingController landing = (LandingController) controllers.get("Landing");
+        landing.updateOrders(positions);
     }
 
 }

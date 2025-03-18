@@ -1,9 +1,8 @@
 package ui;
 
-import core.ApiHandler;
+import broker.Broker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
@@ -24,14 +23,12 @@ public class ConnectionController extends UIController {
     @FXML
     Text fx_status;
 
-    private String[] brokers = {"Trading212"};
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // TODO - Populate broker selection
         // TODO - Store API token securely and auto reconnect
-        //
-        fx_brokerApiSelection.getItems().addAll(brokers);
+        for (Broker b : Broker.values()) {
+            fx_brokerApiSelection.getItems().add(b.name);
+        }
     }
 
     @FXML
@@ -40,23 +37,24 @@ public class ConnectionController extends UIController {
     *
     * */
     private void connectToApi(ActionEvent event){
+        // TODO add checks for duplicates
         String key = Settings.getInstance().getApiKey();
         if (key != null) {
-            ApiHandler.getAccountCash(key, fx_brokerApiSelection.getValue());
+            // TODO call method in FXLoader -> Manager to create an Account and start processing
             return;
         }
 
+        // TODO display error on screen for all inputs
         key = fx_apiKey.getText();
-        // TODO display error on screen to input API Key
+        String selectedBroker = fx_brokerApiSelection.getValue();
         if (key.isEmpty()) return;
 
-        if (fx_brokerApiSelection.getValue().isEmpty()) return;
+        if (selectedBroker.isEmpty()) return;
 
         // Save key
         Settings.getInstance().setSetting("API-KEY1", key);
+        Settings.getInstance().setSetting("API-BROKER1", selectedBroker);
 
-        // TODO use broker handler and connect to API
-        ApiHandler.getAccountCash(key, fx_brokerApiSelection.getValue());
     }
 
 }

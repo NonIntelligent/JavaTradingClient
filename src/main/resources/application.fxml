@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.VBox?>
 
 <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="450.0" prefWidth="800.0" style="-fx-background-color: lightgreen;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ui.LandingController">
     <MenuBar fx:id="fx_titleMenu" maxHeight="30.0" maxWidth="1.7976931348623157E308" prefHeight="30.0" prefWidth="800.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
@@ -58,7 +55,7 @@
                             <tabs>
                                 <Tab text="Orders">
                                     <content>
-                                        <TableView prefHeight="200.0" prefWidth="200.0">
+                                        <TableView fx:id="fx_openOrders" prefHeight="200.0" prefWidth="200.0">
                                             <columns>
                                                 <TableColumn prefWidth="75.0" text="Symbol" />
                                                 <TableColumn prefWidth="75.0" text="Price" />
@@ -73,23 +70,21 @@
                 </AnchorPane>
             </items>
         </SplitPane>
-        <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="420.0" prefWidth="210.0" vbarPolicy="ALWAYS">
-            <content>
-                <VBox fx:id="fx_tickers" prefHeight="200.0" prefWidth="100.0" spacing="2.0">
-               <MenuButton fx:id="fx_tickerExample" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Ticker / price / change" VBox.vgrow="ALWAYS">
-                 <items>
-                   <MenuItem mnemonicParsing="false" text="Add to chart" />
-                   <MenuItem mnemonicParsing="false" text="Buy" />
-                 </items>
-               </MenuButton>
-                    <Button maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" mnemonicParsing="false" prefHeight="30.0" text="Bid 100 Name Ask 105">
-                        <VBox.margin>
-                            <Insets />
-                        </VBox.margin>
-                    </Button>
-                    <Button maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" mnemonicParsing="false" prefHeight="30.0" text="Bid 50 Name2 Ask 51" />
-                </VBox>
-            </content>
-        </ScrollPane>
+      <TabPane layoutY="-1.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="420.0" prefWidth="210.0" tabClosingPolicy="UNAVAILABLE">
+         <tabs>
+            <Tab closable="false" text="Tickers">
+               <content>
+                  <ListView fx:id="fx_tickers" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
     </AnchorPane>
+   <MenuButton fx:id="fx_tickerExample" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Ticker / price / change" visible="false">
+     <items>
+       <MenuItem mnemonicParsing="false" text="Add to chart" />
+       <MenuItem mnemonicParsing="false" text="Buy" />
+         <MenuItem mnemonicParsing="false" text="Sell" />
+     </items>
+   </MenuButton>
 </AnchorPane>

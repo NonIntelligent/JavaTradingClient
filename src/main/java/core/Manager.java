@@ -1,5 +1,9 @@
 package core;
 
+import Data.Instrument;
+import Data.Order;
+import Data.Position;
+import Data.Result;
 import broker.*;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,7 +11,6 @@ import utility.Settings;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class Manager {
@@ -68,6 +71,20 @@ public class Manager {
             try {
                 Instrument[] instruments = mapper.readValue(result.content(), Instrument[].class);
                 app.updateInstruments(instruments);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+        result = acc.tradingApi.fetchOrders();
+
+        /* TODO setup json parsing to organise list of instruments and send to FXLoader.
+        FxLoader to LandingController to display */
+        if (result.isOK()) {
+            try {
+                Position[] position = mapper.readValue(result.content(), Position[].class);
+                app.updateOrders(position);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

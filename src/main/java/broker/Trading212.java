@@ -1,6 +1,6 @@
 package broker;
 
-import core.Result;
+import Data.Result;
 
 public class Trading212 extends TradingAPI {
     // TODO consider moving JSON parsing to Trading API code?
@@ -16,7 +16,7 @@ public class Trading212 extends TradingAPI {
 
     @Override
     public Result fetchOrders() {
-        final String requestURI = baseURI + "/orders";
+        final String requestURI = baseURI + "/portfolio";
         return executeGetRequest(requestURI);
     }
 

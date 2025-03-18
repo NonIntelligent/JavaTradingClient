@@ -1,7 +1,5 @@
 package broker;
 
-import core.Result;
-
 public enum Broker {
     TRADING212("Trading 212", "https://demo.trading212.com", "", "/api/v0/equity"),
     ALPACA("Alpaca", "https://paper-api.alpaca.markets", "https://api.alpaca.markets", "/v2");
