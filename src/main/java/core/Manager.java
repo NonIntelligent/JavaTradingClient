@@ -18,6 +18,7 @@ public class Manager {
     private ObjectMapper mapper;
     public List<String> instruments;
     public List<Account> accounts;
+    private Account activeAccount;
 
     Manager(App app) {
         this.app = app;
@@ -62,6 +63,9 @@ public class Manager {
 
         TradingAPI api = ApiFactory.getApi(broker, type, key, apiID);
         Account acc = new Account(key, api, type);
+        activeAccount = acc;
+
+        accounts.add(acc);
 
         Result result = acc.tradingApi.fetchInstruments();
 
@@ -93,4 +97,7 @@ public class Manager {
 
     }
 
+    public void placeMarketOrder(String id, float quantity) {
+        activeAccount.tradingApi.placeMarketOrder(id, quantity);
+    }
 }

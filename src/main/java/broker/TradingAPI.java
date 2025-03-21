@@ -28,6 +28,8 @@ public abstract class TradingAPI {
     public abstract Result fetchAccountCash();
     public abstract Result fetchAccountMeta();
 
+    public abstract Result placeMarketOrder(String ticker, float quantity);
+
     protected final Result executeGetRequest(String requestURI) {
         try {
             return ApiHandler.executeApiGetRequest(requestURI, headers);

@@ -23,6 +23,10 @@ public class ConnectionController extends UIController {
     @FXML
     Text fx_status;
 
+    public ConnectionController(FXLoading fxLoader) {
+        super(fxLoader);
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // TODO - Store API token securely and auto reconnect

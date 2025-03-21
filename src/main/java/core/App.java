@@ -52,4 +52,8 @@ public class App extends Application {
     public void sendDataToUI() {
 
     }
+
+    public void placeMarketOrder(String id, float quantity) {
+        manager.placeMarketOrder(id, quantity);
+    }
 }

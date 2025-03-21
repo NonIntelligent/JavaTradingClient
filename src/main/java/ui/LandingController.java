@@ -5,6 +5,7 @@ import Data.Order;
 import Data.Position;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -20,6 +21,10 @@ public class LandingController extends UIController {
     @FXML private TableView<Position> fx_openOrders;
     @FXML private TableView<Position> fx_closedOrders;
     private Stage mainStage;
+
+    public LandingController(FXLoading fxLoader) {
+        super(fxLoader);
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -43,18 +48,36 @@ public class LandingController extends UIController {
     public void updateTickers(Instrument[] instruments) {
 
         // Populate list with new items
+        // TODO change from buttons to tilted panes
+        //  content is buy/sell options
         if (fx_tickers.getItems().isEmpty()) {
             for (int i = 0; i < instruments.length; i++) {
                 Instrument inst = instruments[i];
                 String text = inst.ticker + "     " + inst.type + "     " + inst.currencyCode;
                 MenuButton ticker = new MenuButton(text);
+                MenuItem buySellItem = new MenuItem("Create Order");
+                buySellItem.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        buyStock(inst.ticker, 0.1f);
+                    }
+                });
                 // TODO only for testing, change to replace existing values instead if they exist.
+                ticker.getItems().add(buySellItem);
                 fx_tickers.getItems().add(ticker);
             }
         }
         else {
 
         }
+    }
+
+    public void buyStock(String id, float quantity) {
+        fxLoaderRef.sendBuyOrder(id, quantity);
+    }
+
+    public void sellStock() {
+
     }
 
     public void updateOrders(Position[] positions) {

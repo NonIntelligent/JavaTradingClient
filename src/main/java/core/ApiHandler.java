@@ -2,10 +2,13 @@ package core;
 
 import Data.Result;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.message.StatusLine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,6 +36,27 @@ public final class ApiHandler {
             log.info("{}->{}", httpGet, new StatusLine(response));
             return new Result(response.getCode(), EntityUtils.toString(response.getEntity()));
         });
+
+        return result;
+    }
+
+    public static Result executeApiPostRequest(String request, String payload, ArrayList<Header> headers) throws IOException {
+        HttpPost httpPost = new HttpPost(request);
+
+        httpPost.setEntity(new StringEntity(payload, ContentType.APPLICATION_JSON));
+
+        httpPost.addHeader("Content-Type", "application/json");
+
+        for (int i = 0; i < headers.size(); i++) {
+            httpPost.addHeader(headers.get(i));
+        }
+
+        Result result = httpClient.execute(httpPost, response -> {
+            log.info("{}->{}", httpPost, new StatusLine(response));
+            return new Result(response.getCode(), EntityUtils.toString(response.getEntity()));
+        });
+
+        log.info(result.content());
 
         return result;
     }

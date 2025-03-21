@@ -30,15 +30,15 @@ public class FXLoading {
         this.mainWindow = appStage;
 
         FXMLLoader application = new FXMLLoader(getClass().getResource("/application.fxml"));
+        LandingController controller = new LandingController(this);
         Parent root = null;
         try {
+            application.setController(controller);
             root = application.load();
         } catch (IOException e) {
             logUI.error("Failed to load application.fxml", e);
         }
 
-        UIController controller = application.getController();
-        controller.setFxLoader(this);
         controllers.put("Landing", controller);
 
         mainWindow.setTitle("Java Market Trader");
@@ -55,16 +55,16 @@ public class FXLoading {
 
     public void LoadConnectionPage() {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/connection.fxml"));
+        ConnectionController controller = new ConnectionController(this);
         Parent root = null;
         try {
+            loader.setController(controller);
             root = loader.load();
         } catch (IOException e) {
             logUI.error("Failed to load connection.fxml.", e);
             return;
         }
 
-        UIController controller = loader.getController();
-        controller.setFxLoader(this);
         controllers.put("Connection", controller);
 
         Stage connection = new Stage();
@@ -90,4 +90,7 @@ public class FXLoading {
         landing.updateOrders(positions);
     }
 
+    public void sendBuyOrder(String id, float quantity) {
+        app.placeMarketOrder(id, quantity);
+    }
 }
