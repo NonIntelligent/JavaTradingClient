@@ -61,7 +61,7 @@ public final class ApiHandler {
         return result;
     }
 
-    public static void shutdown() {
+    public static void terminate() {
         try {
             httpClient.close();
         } catch (IOException e) {

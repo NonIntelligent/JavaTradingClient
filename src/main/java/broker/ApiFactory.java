@@ -11,7 +11,7 @@ public final class ApiFactory {
                 api.addHeaderForRequests("Authorization", key);
                 yield api;
             }
-            default -> throw new IllegalArgumentException("Broker case not supported");
+            default -> throw new IllegalArgumentException("The API factory does not support this broker");
         };
     }
 }

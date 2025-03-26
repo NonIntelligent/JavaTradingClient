@@ -1,27 +1,30 @@
 package core;
 
 import Data.Instrument;
-import Data.Order;
 import Data.Position;
 import Data.Result;
 import broker.*;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.util.Pair;
+import utility.Consumer;
 import utility.Settings;
+import utility.TaskExecutor;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Manager {
-    private final App app;
+public class Manager implements Consumer {
+    private final EventChannel eventChannel;
     private ObjectMapper mapper;
     public List<String> instruments;
     public List<Account> accounts;
     private Account activeAccount;
+    private final TaskExecutor dataRequester;
 
-    Manager(App app) {
-        this.app = app;
+    Manager(EventChannel eventChannel) {
+        this.eventChannel = eventChannel;
         // Possibly get rid of this copy of instruments.
         // Only UI needs to retain all the instruments to display
         instruments = new ArrayList<>(100);
@@ -29,15 +32,8 @@ public class Manager {
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
 
-    public boolean isAPIKeyValid(String apiKey, String broker) {
-        if (apiKey.equals("EMPTY")) return false;
-
-        // TODO change to check Account Cash or other low limited rates
-        Result result = new Result(401, "TODO");
-
-        return result.status() == 200;
+        dataRequester = new TaskExecutor(4);
     }
 
     public Account createAccount() {
@@ -74,30 +70,46 @@ public class Manager {
         if (result.isOK()) {
             try {
                 Instrument[] instruments = mapper.readValue(result.content(), Instrument[].class);
-                app.updateInstruments(instruments);
-            } catch (IOException e) {
+                eventChannel.publish(instruments, AppEventType.ALL_INSTRUMENTS);
+            } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
         }
 
-        result = acc.tradingApi.fetchOrders();
+        dataRequester.scheduleDelayedTask(this::retrieveOpenOrders, 500L, 5000L);
+
+    }
+
+    public void retrieveOpenOrders() {
+        Result result = activeAccount.tradingApi.fetchOrders();
 
         /* TODO setup json parsing to organise list of instruments and send to FXLoader.
         FxLoader to LandingController to display */
         if (result.isOK()) {
             try {
                 Position[] position = mapper.readValue(result.content(), Position[].class);
-                app.updateOrders(position);
-            } catch (IOException e) {
+                eventChannel.publish(position, AppEventType.OPEN_POSITIONS);
+            } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
         }
+    }
 
+    @Override
+    public void processEvent(AppEvent event) {
+        switch (event.type()) {
+            case MARKET_ORDER -> {Pair<String, Float> a = (Pair<String, Float>) event.data();
+                placeMarketOrder(a.getKey(), a.getValue());}
+        }
     }
 
     public void placeMarketOrder(String id, float quantity) {
         activeAccount.tradingApi.placeMarketOrder(id, quantity);
+    }
+
+    public void stop() {
+        dataRequester.shutdown();
     }
 }

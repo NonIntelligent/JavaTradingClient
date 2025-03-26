@@ -1,29 +1,28 @@
 package utility;
 
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class TaskExecutor {
     private final ScheduledThreadPoolExecutor threadPool;
 
-    public TaskExecutor() {
-        threadPool = new ScheduledThreadPoolExecutor(4);
+    public TaskExecutor(int minPoolSize) {
+        threadPool = new ScheduledThreadPoolExecutor(minPoolSize);
+        threadPool.setRemoveOnCancelPolicy(true);
     }
 
-    public Future submitTask(Runnable task) {
+    public Future<?> submitTask(Runnable task) {
         return threadPool.submit(task);
     }
 
-    public Future scheduleTask(Runnable task, long startDelay) {
+    public ScheduledFuture<?> scheduleTask(Runnable task, long startDelay) {
         return threadPool.schedule(task, startDelay, TimeUnit.MILLISECONDS);
     }
 
-    public Future scheduleRepeatedTask(Runnable task, long startDelay, long period) {
+    public ScheduledFuture<?> scheduleRepeatedTask(Runnable task, long startDelay, long period) {
         return threadPool.scheduleAtFixedRate(task, startDelay, period, TimeUnit.MILLISECONDS);
     }
 
-    public Future scheduleDelayedTask(Runnable task, long startDelay, long delayBetweenTasks) {
+    public ScheduledFuture<?> scheduleDelayedTask(Runnable task, long startDelay, long delayBetweenTasks) {
         return threadPool.scheduleWithFixedDelay(task, startDelay, delayBetweenTasks, TimeUnit.MILLISECONDS);
     }
 
@@ -31,10 +30,16 @@ public class TaskExecutor {
         threadPool.purge();
         threadPool.shutdown();
         try {
-            threadPool.awaitTermination(1000L, TimeUnit.MILLISECONDS);
+            boolean terminated = threadPool.awaitTermination(1000L, TimeUnit.MILLISECONDS);
+            if (!terminated) threadPool.shutdownNow();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void shutdownNow() {
+        threadPool.purge();
+        threadPool.shutdownNow();
     }
 
 }

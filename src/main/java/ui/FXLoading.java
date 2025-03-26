@@ -1,28 +1,29 @@
 package ui;
 
 import Data.Instrument;
-import Data.Order;
 import Data.Position;
-import core.App;
+import core.*;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import utility.Consumer;
 
 import java.io.IOException;
 import java.util.HashMap;
 
-public class FXLoading {
+public class FXLoading implements Consumer {
     private static final Logger logUI = LogManager.getLogger("UI");
-    private final App app;
+    private final EventChannel eventChannel;
     private Stage mainWindow = null;
     private HashMap<String, UIController> controllers;
 
-    public FXLoading(App app) {
-        this.app = app;
+    public FXLoading(EventChannel eventChannel) {
+        this.eventChannel = eventChannel;
         controllers = new HashMap<>(2);
     }
 
@@ -80,6 +81,14 @@ public class FXLoading {
         connection.show();
     }
 
+    @Override
+    public void processEvent(AppEvent event) {
+        switch (event.type()) {
+            case ALL_INSTRUMENTS -> showAllTickers((Instrument[]) event.data());
+            case OPEN_POSITIONS -> showAllOrders((Position[]) event.data());
+        }
+    }
+
     public void showAllTickers(Instrument[] instruments) {
         LandingController landing = (LandingController) controllers.get("Landing");
         landing.updateTickers(instruments);
@@ -91,6 +100,10 @@ public class FXLoading {
     }
 
     public void sendBuyOrder(String id, float quantity) {
-        app.placeMarketOrder(id, quantity);
+        try {
+            eventChannel.publish(new Pair<>(id, quantity),AppEventType.MARKET_ORDER);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

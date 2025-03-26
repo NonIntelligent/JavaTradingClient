@@ -83,6 +83,7 @@ public class LandingController extends UIController {
     public void updateOrders(Position[] positions) {
         // TODO get tableview from Orders tab and populate
         var list = fx_openOrders.getItems();
+        list.clear();
         // Populate list with new items
         for (int i = 0; i < positions.length; i++) {
             Position position = positions[i];
