@@ -33,20 +33,7 @@
             <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                     <children>
-                        <TabPane layoutY="-1.0" prefHeight="206.4" prefWidth="588.8" side="BOTTOM" tabClosingPolicy="ALL_TABS" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                            <tabs>
-                                <Tab text="Chart 1">
-                                    <content>
-                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" style="-fx-background-color: lightblue;" />
-                                    </content>
-                                </Tab>
-                                <Tab text="Chart 2">
-                                    <content>
-                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" style="-fx-background-color: cyan;" />
-                                    </content>
-                                </Tab>
-                            </tabs>
-                        </TabPane>
+                        <TabPane fx:id="fx_chartsTabPane" layoutY="-1.0" prefHeight="206.4" prefWidth="588.8" side="BOTTOM" tabClosingPolicy="ALL_TABS" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                     </children>
                 </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="523.0">

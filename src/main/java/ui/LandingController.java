@@ -1,18 +1,35 @@
 package ui;
 
 import Data.Instrument;
-import Data.Order;
 import Data.Position;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import org.apache.hc.core5.util.Args;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.fx.ChartViewer;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.CandlestickRenderer;
+import org.jfree.data.time.ohlc.OHLC;
+import org.jfree.data.xy.DefaultOHLCDataset;
+import org.jfree.data.xy.OHLCDataItem;
+import org.jfree.data.xy.OHLCDataset;
 
+import java.awt.*;
 import java.net.URL;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.ResourceBundle;
+import java.util.TimeZone;
 
 public class LandingController extends UIController {
     @FXML private MenuBar fx_titleMenu;
@@ -20,6 +37,7 @@ public class LandingController extends UIController {
     @FXML private MenuButton fx_tickerExample;
     @FXML private TableView<Position> fx_openOrders;
     @FXML private TableView<Position> fx_closedOrders;
+    @FXML private TabPane fx_chartsTabPane;
     private Stage mainStage;
 
     public LandingController(FXLoading fxLoader) {
@@ -62,8 +80,18 @@ public class LandingController extends UIController {
                         buyStock(inst.ticker, 0.1f);
                     }
                 });
+
+                MenuItem openChart = new MenuItem("Open Chart");
+                openChart.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        openChart(inst.ticker);
+                    }
+                });
+
                 // TODO only for testing, change to replace existing values instead if they exist.
                 ticker.getItems().add(buySellItem);
+                ticker.getItems().add(openChart);
                 fx_tickers.getItems().add(ticker);
             }
         }
@@ -89,5 +117,43 @@ public class LandingController extends UIController {
             Position position = positions[i];
             fx_openOrders.getItems().add(position);
         }
+    }
+
+    public void openChart(String ticker) {
+        // create chart and wait for data to be updated
+        // TODO create renderer on initialise?
+        OHLCDataItem[] data = new OHLCDataItem[5];
+
+        // Mock data
+        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+        for (int i = 0; i < data.length; i++){
+            calendar.setTime(Date.from(Instant.now()));
+            calendar.add(Calendar.MINUTE, -i);
+
+            data[i] = new OHLCDataItem(calendar.getTime(),
+                    100.0 + 2*i, 100.0 + 5*i,
+                    90.0 - 5*i, 90.0 - 2*i,
+                    100.0);
+        }
+
+        DefaultOHLCDataset dataset = new DefaultOHLCDataset("ticker", data);
+
+        JFreeChart chart = ChartFactory.createCandlestickChart(
+                "Candlestick Chart","Time", "Price", dataset, false);
+
+        // Customize plot
+        XYPlot plot = (XYPlot) chart.getPlot();
+        CandlestickRenderer renderer = (CandlestickRenderer) plot.getRenderer();
+        renderer.setUseOutlinePaint(true);
+        renderer.setUpPaint(Color.GREEN);
+        renderer.setDownPaint(Color.RED);
+
+        // Create chart panel
+        ChartViewer viewer = new ChartViewer(chart, true);
+
+        Tab tab = new Tab(ticker);
+        tab.setContent(viewer);
+
+        fx_chartsTabPane.getTabs().add(tab);
     }
 }
