@@ -1,7 +1,7 @@
 package broker;
 
 public final class ApiFactory {
-    public static TradingAPI getApi(Broker broker, AccountType type, String key, String apiID) {
+    public static TradingAPI getApi(Broker broker, AccountType type, String key, String apiID) throws IllegalArgumentException {
         String domain = type == AccountType.DEMO ? broker.demo : broker.live;
         TradingAPI api;
 
