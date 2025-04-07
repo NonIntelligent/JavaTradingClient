@@ -2,21 +2,42 @@
 <Configuration status="WARN">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
+            <LevelRangeFilter minLevel="INFO" maxLevel="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
+        <Console name="ConsoleErr" target="SYSTEM_ERR">
+            <LevelRangeFilter minLevel="FATAL" maxLevel="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+        <RollingFile name="LogFile"
+                     filename="logs/TradingClient-${date:yyyy-MM-dd}.log"
+                     filepattern="logs/TradingClient-%d{yyyy-MM-dd}(%i).log">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <DefaultRolloverStrategy max="5"/>
+            </Policies>
+        </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="surface" level="info" additivity="false">
+        <Logger name="application" level="info" additivity="false">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="ConsoleErr"/>
+            <AppenderRef ref="LogFile"/>
         </Logger>
-        <Logger name="UI" level="info" additivity="false">
+        <Logger name="ui" level="info" additivity="false">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="ConsoleErr"/>
+            <AppenderRef ref="LogFile"/>
         </Logger>
-        <Logger name="API" level="info" additivity="false">
+        <Logger name="api" level="info" additivity="false">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="ConsoleErr"/>
+            <AppenderRef ref="LogFile"/>
         </Logger>
         <Root level="error">
-            <AppenderRef ref="Console"/>
+            <AppenderRef ref="ConsoleErr"/>
+            <AppenderRef ref="LogFile"/>
         </Root>
     </Loggers>
 </Configuration>

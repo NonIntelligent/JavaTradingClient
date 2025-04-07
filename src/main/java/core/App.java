@@ -2,12 +2,12 @@ package core;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ui.FXLoading;
 
 public class App extends Application {
-    private static final Logger log = LogManager.getLogger("surface");
+    private static final Logger log = LoggerFactory.getLogger("application");
     private Manager manager;
     private FXLoading fxLoading;
     private final EventChannel eventChannel;
@@ -24,6 +24,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        log.info("Starting application and building interface");
         fxLoading.LoadLandingPage(stage);
         manager.beginProcessing();
         // TODO create account class to hold api key and broker data.

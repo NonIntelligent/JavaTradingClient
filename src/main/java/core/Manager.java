@@ -7,6 +7,8 @@ import broker.*;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import utility.Consumer;
 import utility.Settings;
 import utility.TaskExecutor;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Manager implements Consumer {
+    private static final Logger log = LoggerFactory.getLogger("application");
     private final EventChannel eventChannel;
     private ObjectMapper mapper;
     public List<String> instruments;
@@ -46,6 +49,7 @@ public class Manager implements Consumer {
     }
 
     public void beginProcessing() {
+        log.info("Start processing and fetching api data for the accounts");
         // TODO replace with timer to check for valid API
         // Then setup tasks and refresh data based on interval
 
@@ -71,8 +75,10 @@ public class Manager implements Consumer {
             try {
                 Instrument[] instruments = mapper.readValue(result.content(), Instrument[].class);
                 eventChannel.publish(instruments, AppEventType.ALL_INSTRUMENTS);
-            } catch (IOException | InterruptedException e) {
-                throw new RuntimeException(e);
+            } catch (IOException e) {
+                log.error("JSON parsing failed to read result contents", e);
+            } catch (InterruptedException e) {
+                log.error("Event publishing was interrupted", e);
             }
 
         }
@@ -90,8 +96,10 @@ public class Manager implements Consumer {
             try {
                 Position[] position = mapper.readValue(result.content(), Position[].class);
                 eventChannel.publish(position, AppEventType.OPEN_POSITIONS);
-            } catch (IOException | InterruptedException e) {
-                throw new RuntimeException(e);
+            } catch (IOException e) {
+                log.error("JSON parsing failed to read result contents", e);
+            } catch (InterruptedException e) {
+                log.error("Event publishing was interrupted", e);
             }
 
         }

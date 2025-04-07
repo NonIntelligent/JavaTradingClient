@@ -10,14 +10,14 @@ import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.message.StatusLine;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
 public final class ApiHandler {
-    private static final Logger log = LogManager.getLogger("API");
+    private static final Logger log = LoggerFactory.getLogger("api");
     private static final CloseableHttpClient httpClient = HttpClients.createDefault();
 
     // TODO Convert to regular class initialised by Manager,
@@ -65,7 +65,7 @@ public final class ApiHandler {
         try {
             httpClient.close();
         } catch (IOException e) {
-            log.error("Problem with closing Http client.", e);
+            log.warn("Problem with closing Http client.", e);
         }
     }
 }

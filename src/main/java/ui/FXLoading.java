@@ -9,15 +9,15 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.util.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import utility.Consumer;
 
 import java.io.IOException;
 import java.util.HashMap;
 
 public class FXLoading implements Consumer {
-    private static final Logger logUI = LogManager.getLogger("UI");
+    private static final Logger log = LoggerFactory.getLogger("ui");
     private final EventChannel eventChannel;
     private Stage mainWindow = null;
     private HashMap<String, UIController> controllers;
@@ -37,7 +37,7 @@ public class FXLoading implements Consumer {
             application.setController(controller);
             root = application.load();
         } catch (IOException e) {
-            logUI.error("Failed to load application.fxml", e);
+            log.error("Failed to load application.fxml", e);
         }
 
         controllers.put("Landing", controller);
@@ -45,12 +45,12 @@ public class FXLoading implements Consumer {
         mainWindow.setTitle("Java Market Trader");
         mainWindow.setScene(new Scene(root));
         mainWindow.setOnCloseRequest(windowEvent -> {
-            logUI.info("Stage is closing");
+            log.info("Stage is closing");
             // Cleanup
             Platform.exit();
         });
 
-        logUI.info("UI Launched");
+        log.info("UI Launched");
         mainWindow.show();
     }
 
@@ -62,7 +62,7 @@ public class FXLoading implements Consumer {
             loader.setController(controller);
             root = loader.load();
         } catch (IOException e) {
-            logUI.error("Failed to load connection.fxml.", e);
+            log.error("Failed to load connection.fxml.", e);
             return;
         }
 
@@ -74,7 +74,7 @@ public class FXLoading implements Consumer {
         connection.setScene(scene);
 
         connection.setOnCloseRequest(windowEvent -> {
-            logUI.info("Connection stage is closing");
+            log.info("Connection stage is closing");
             controllers.remove("Connection");
         });
 
@@ -103,7 +103,7 @@ public class FXLoading implements Consumer {
         try {
             eventChannel.publish(new Pair<>(id, quantity),AppEventType.MARKET_ORDER);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            log.error("Event publishing was interrupted", e);
         }
     }
 }

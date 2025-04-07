@@ -21,6 +21,8 @@ import org.jfree.data.time.ohlc.OHLC;
 import org.jfree.data.xy.DefaultOHLCDataset;
 import org.jfree.data.xy.OHLCDataItem;
 import org.jfree.data.xy.OHLCDataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.net.URL;
@@ -32,6 +34,7 @@ import java.util.ResourceBundle;
 import java.util.TimeZone;
 
 public class LandingController extends UIController {
+    private static final Logger log = LoggerFactory.getLogger("ui");
     @FXML private MenuBar fx_titleMenu;
     @FXML private ListView<MenuButton> fx_tickers;
     @FXML private MenuButton fx_tickerExample;
@@ -101,6 +104,7 @@ public class LandingController extends UIController {
     }
 
     public void buyStock(String id, float quantity) {
+        log.info("Sending buy order of {}:{}", quantity, id);
         fxLoaderRef.sendBuyOrder(id, quantity);
     }
 
