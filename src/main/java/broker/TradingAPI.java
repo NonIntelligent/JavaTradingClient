@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public abstract class TradingAPI {
-    protected final Broker broker;
+    public final Broker broker;
     protected final String domain;
     protected final String baseURI;
 

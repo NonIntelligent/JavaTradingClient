@@ -8,6 +8,7 @@ public class Account {
 
     // possibly convert datablock into a record class
     // As it will not change for the lifetime of the class and a new object can be created instead
+    public ApiData apiData;
     public final String apiKey;
     public final TradingAPI tradingApi;
     public final AccountType accountType;

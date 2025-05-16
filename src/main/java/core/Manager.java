@@ -43,11 +43,6 @@ public class Manager implements Consumer {
         return new Account("",null,null);
     }
 
-    public void reloadState() {
-        // TODO load account data from saved settings
-        // i.e. load auth keys and re-create account objects
-    }
-
     public void beginProcessing() {
         log.info("Start processing and fetching api data for the accounts");
         // TODO replace with timer to check for valid API

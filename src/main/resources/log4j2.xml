@@ -35,6 +35,10 @@
             <AppenderRef ref="ConsoleErr"/>
             <AppenderRef ref="LogFile"/>
         </Logger>
+        <Logger name="FileIO" level="info" additivity="false">
+            <AppenderRef ref="ConsoleErr"/>
+            <AppenderRef ref="LogFile"/>
+        </Logger>
         <Root level="error">
             <AppenderRef ref="ConsoleErr"/>
             <AppenderRef ref="LogFile"/>

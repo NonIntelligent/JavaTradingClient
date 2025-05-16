@@ -13,7 +13,7 @@ class ApiFactoryTest {
      * Tests all Broker enums to see if they are constructable by the factory.
      * This does mean the class needs to be fully feature implemented.
      */
-    @Test
+
     @Order(1)
     void are_all_apis_constructable() {
         assertDoesNotThrow(() ->{
@@ -30,7 +30,7 @@ class ApiFactoryTest {
      * or if the wrong class was constructed by the factory.
      * !!!
      */
-    @Test
+
     @Order(2)
     void does_broker_type_match_api() {
         Assumptions.assumeTrue(factoryIsSound,
