@@ -3,7 +3,6 @@ package utility;
 import broker.*;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
@@ -18,12 +17,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ApiKeyStore {
+public class AccountApiStore {
     private static final Logger log = LoggerFactory.getLogger("FileIO");
     private final String apiFilePath;
     private final ObjectMapper mapper;
 
-    public ApiKeyStore(List<Account> accounts) {
+    public AccountApiStore(List<Account> accounts) {
         apiFilePath = Thread.currentThread().getContextClassLoader().getResource("").getPath()
                 + "accounts.json";
 
@@ -54,7 +53,7 @@ public class ApiKeyStore {
 
         // Iterate through each account and store APIData to list
         List<ApiData> apiDataList = new ArrayList<>(accounts.size());
-        // TODO Encrypt api key using the client's password
+        // TODO Encrypt api key using the client's password as key
         for (Account acc : accounts){
             apiDataList.add(acc.apiData);
         }
@@ -63,10 +62,13 @@ public class ApiKeyStore {
         mapper.writeValue(file, apiDataList);
     }
 
-    public List<ApiData> loadStoredAPIs() throws IOException {
+    public List<ApiData> loadStoredAPIs(String password) throws IOException {
         // check if file exists and if there are any entries
         File file = new File(apiFilePath);
-
+        // TODO notes for encryption implementation
+        //  ask for password on start-up if a JSON file exists and decrypt keys/create accounts
+        //  do a small metadata api call to see if password/key is correct
+        //  When saving, ask for password and check result against existing result in file
         // Read each entry and decrypt api keys with custom deserializer
         List<ApiData> badEntries = new ArrayList<>();
         List<ApiData> storedAPIs = mapper.readValue(file, new TypeReference<List<ApiData>>() {});
