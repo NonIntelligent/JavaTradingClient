@@ -59,9 +59,14 @@
             <version>23.0.1</version>
         </dependency>
         <dependency>
-            <groupId>org.jfree</groupId>
-            <artifactId>org.jfree.chart.fx</artifactId>
-            <version>2.0.1</version>
+            <groupId>io.fair-acc</groupId>
+            <artifactId>chartfx</artifactId>
+            <version>11.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.fair-acc</groupId>
+            <artifactId>samples</artifactId>
+            <version>11.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

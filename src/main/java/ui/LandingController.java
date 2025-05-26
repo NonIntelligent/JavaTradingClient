@@ -11,16 +11,6 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import org.apache.hc.core5.util.Args;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.fx.ChartViewer;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.CandlestickRenderer;
-import org.jfree.data.time.ohlc.OHLC;
-import org.jfree.data.xy.DefaultOHLCDataset;
-import org.jfree.data.xy.OHLCDataItem;
-import org.jfree.data.xy.OHLCDataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +116,7 @@ public class LandingController extends UIController {
     public void openChart(String ticker) {
         // create chart and wait for data to be updated
         // TODO create renderer on initialise?
-        OHLCDataItem[] data = new OHLCDataItem[5];
+        OHLCDataItem[] data = new OHLCDataItem[60];
 
         // Mock data
         Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
