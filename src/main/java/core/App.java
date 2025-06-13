@@ -1,5 +1,6 @@
 package core;
 
+import com.sun.javafx.runtime.VersionInfo;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -24,12 +25,13 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        // JavaFX version
+        log.info("JavaFX Version: {}", System.getProperty("javafx.version"));
+        log.info("JavaFX Runtime Version: {}", System.getProperty("javafx.runtime.version"));
+
         log.info("Starting application and building interface");
         fxLoading.LoadLandingPage(stage);
         manager.beginProcessing();
-        // TODO create account class to hold api key and broker data.
-        // Possibly use a builder to create the class and setup it's methods to call.
-
     }
 
     @Override

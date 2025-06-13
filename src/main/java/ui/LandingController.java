@@ -14,14 +14,8 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
 import java.net.URL;
-import java.time.Clock;
-import java.time.Instant;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.ResourceBundle;
-import java.util.TimeZone;
 
 public class LandingController extends UIController {
     private static final Logger log = LoggerFactory.getLogger("ui");
@@ -115,38 +109,12 @@ public class LandingController extends UIController {
 
     public void openChart(String ticker) {
         // create chart and wait for data to be updated
-        // TODO create renderer on initialise?
-        OHLCDataItem[] data = new OHLCDataItem[60];
+        log.debug("Opening chart");
 
-        // Mock data
-        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
-        for (int i = 0; i < data.length; i++){
-            calendar.setTime(Date.from(Instant.now()));
-            calendar.add(Calendar.MINUTE, -i);
-
-            data[i] = new OHLCDataItem(calendar.getTime(),
-                    100.0 + 2*i, 100.0 + 5*i,
-                    90.0 - 5*i, 90.0 - 2*i,
-                    100.0);
-        }
-
-        DefaultOHLCDataset dataset = new DefaultOHLCDataset("ticker", data);
-
-        JFreeChart chart = ChartFactory.createCandlestickChart(
-                "Candlestick Chart","Time", "Price", dataset, false);
-
-        // Customize plot
-        XYPlot plot = (XYPlot) chart.getPlot();
-        CandlestickRenderer renderer = (CandlestickRenderer) plot.getRenderer();
-        renderer.setUseOutlinePaint(true);
-        renderer.setUpPaint(Color.GREEN);
-        renderer.setDownPaint(Color.RED);
-
-        // Create chart panel
-        ChartViewer viewer = new ChartViewer(chart, true);
+        CandlestickChart chart = new CandlestickChart("[TF1D]", "Mock Data", "TF1D");
 
         Tab tab = new Tab(ticker);
-        tab.setContent(viewer);
+        tab.setContent(chart);
 
         fx_chartsTabPane.getTabs().add(tab);
     }
