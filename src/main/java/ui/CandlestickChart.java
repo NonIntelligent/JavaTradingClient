@@ -11,6 +11,7 @@ import io.fair_acc.chartfx.renderer.ErrorStyle;
 import io.fair_acc.chartfx.renderer.spi.ErrorDataSetRenderer;
 import io.fair_acc.chartfx.renderer.spi.financial.CandleStickRenderer;
 import io.fair_acc.chartfx.renderer.spi.financial.FinancialTheme;
+import io.fair_acc.chartfx.ui.geometry.Side;
 import io.fair_acc.dataset.DataSet;
 import io.fair_acc.dataset.spi.DefaultDataSet;
 import io.fair_acc.dataset.spi.financial.OhlcvDataSet;
@@ -28,14 +29,15 @@ public class CandlestickChart extends XYChart {
     public CandlestickChart(String fileName, String title, String symbol){
         super();
         setTitle(title);
-        DefaultNumericAxis xa = new DefaultNumericAxis("Price", "points");
-        DefaultNumericAxis ya = new DefaultNumericAxis("Price", "points");
+        DefaultNumericAxis xa = new DefaultNumericAxis("Time", "d");
+        DefaultNumericAxis ya = new DefaultNumericAxis("Price", "USD");
+        ya.setSide(Side.LEFT);
 
         getAxes().clear();
         getAxes().add(xa);
         getAxes().add(ya);
 
-        FinancialTheme.Blackberry.applyPseudoClasses(this);
+        FinancialTheme.Classic.applyPseudoClasses(this);
         getPlugins().add(new Zoomer(AxisMode.X));
         getPlugins().add(new EditAxis());
         getPlugins().add(new DataPointTooltip());

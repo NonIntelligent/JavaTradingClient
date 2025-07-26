@@ -2,6 +2,7 @@ package ui;
 
 import Data.Instrument;
 import Data.Position;
+import broker.Account;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -20,8 +21,8 @@ import java.util.ResourceBundle;
 public class LandingController extends UIController {
     private static final Logger log = LoggerFactory.getLogger("ui");
     @FXML private MenuBar fx_titleMenu;
+    @FXML private TableView<Account> fx_accounts;
     @FXML private ListView<MenuButton> fx_tickers;
-    @FXML private MenuButton fx_tickerExample;
     @FXML private TableView<Position> fx_openOrders;
     @FXML private TableView<Position> fx_closedOrders;
     @FXML private TabPane fx_chartsTabPane;
@@ -53,38 +54,43 @@ public class LandingController extends UIController {
     public void updateTickers(Instrument[] instruments) {
 
         // Populate list with new items
-        // TODO change from buttons to tilted panes
-        //  content is buy/sell options
         if (fx_tickers.getItems().isEmpty()) {
             for (int i = 0; i < instruments.length; i++) {
                 Instrument inst = instruments[i];
-                String text = inst.ticker + "     " + inst.type + "     " + inst.currencyCode;
-                MenuButton ticker = new MenuButton(text);
-                MenuItem buySellItem = new MenuItem("Create Order");
-                buySellItem.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent event) {
-                        buyStock(inst.ticker, 0.1f);
-                    }
-                });
-
-                MenuItem openChart = new MenuItem("Open Chart");
-                openChart.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent event) {
-                        openChart(inst.ticker);
-                    }
-                });
-
-                // TODO only for testing, change to replace existing values instead if they exist.
-                ticker.getItems().add(buySellItem);
-                ticker.getItems().add(openChart);
-                fx_tickers.getItems().add(ticker);
+                MenuButton tickerButton = createTickerButton(inst);
+                fx_tickers.getItems().add(tickerButton);
             }
         }
         else {
-
+            // TODO update prices of existing button
         }
+    }
+
+    private MenuButton createTickerButton(Instrument inst) {
+        // TODO change from buttons to tilted panes
+        //  content is buy/sell options
+        String text = inst.ticker + "     " + inst.type + "     " + inst.currencyCode;
+        MenuButton ticker = new MenuButton(text);
+        MenuItem buySellItem = new MenuItem("Create Order");
+        buySellItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                buyStock(inst.ticker, 0.1f);
+            }
+        });
+
+        MenuItem openChart = new MenuItem("Open Chart");
+        openChart.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                openChart(inst.ticker);
+            }
+        });
+
+        // TODO only for testing, change to replace existing values instead if they exist.
+        ticker.getItems().add(buySellItem);
+        ticker.getItems().add(openChart);
+        return ticker;
     }
 
     public void buyStock(String id, float quantity) {
