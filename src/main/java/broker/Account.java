@@ -23,5 +23,9 @@ public class Account {
         this.accountType = accountType;
     }
 
+    // Getters for tableview entries
+    public String getBrokerName(){return tradingApi.broker.name;}
+    public Integer getFreeCash(){return freeCash;}
+    public Integer getInvestedCash(){return investedCash;}
 }
 

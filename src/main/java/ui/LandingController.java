@@ -34,10 +34,8 @@ public class LandingController extends UIController {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        fx_openOrders.setPlaceholder(new Label("No rows to display"));
-        var columns = fx_openOrders.getColumns();
-        columns.get(0).setCellValueFactory(new PropertyValueFactory<>("ticker"));
-        columns.get(1).setCellValueFactory(new PropertyValueFactory<>("currentPrice"));
+        setupTableOrders();
+        setupTableAccounts();
     }
 
     @FXML
@@ -49,6 +47,22 @@ public class LandingController extends UIController {
     private void closeApplication(ActionEvent e) {
         mainStage = (Stage) fx_titleMenu.getScene().getWindow();
         mainStage.close();
+    }
+
+    private void setupTableOrders() {
+        fx_openOrders.setPlaceholder(new Label("No rows to display"));
+        var columns = fx_openOrders.getColumns();
+        columns.get(0).setCellValueFactory(new PropertyValueFactory<>("ticker"));
+        columns.get(1).setCellValueFactory(new PropertyValueFactory<>("currentPrice"));
+    }
+
+    private void setupTableAccounts() {
+        fx_accounts.setPlaceholder(new Label("No accounts to display."));
+        var columns = fx_accounts.getColumns();
+        columns.get(1).setCellValueFactory(new PropertyValueFactory<>("brokerName"));
+        columns.get(3).setCellValueFactory(new PropertyValueFactory<>("freeCash"));
+        columns.get(4).setCellValueFactory(new PropertyValueFactory<>("investedCash"));
+        columns.get(5).setCellValueFactory(new PropertyValueFactory<>("freeCash"));
     }
 
     public void updateTickers(Instrument[] instruments) {
@@ -113,6 +127,10 @@ public class LandingController extends UIController {
         }
     }
 
+    public void addAccountToTable(Account acc) {
+        fx_accounts.getItems().add(acc);
+    }
+
     public void openChart(String ticker) {
         // create chart and wait for data to be updated
         log.debug("Opening chart");
@@ -123,5 +141,11 @@ public class LandingController extends UIController {
         tab.setContent(chart);
 
         fx_chartsTabPane.getTabs().add(tab);
+    }
+
+    // Refresh all visible cells in every table.
+    public void refreshAllTables() {
+        fx_accounts.refresh();
+        fx_tickers.refresh();
     }
 }
