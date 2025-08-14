@@ -3,8 +3,7 @@ package core;
 public enum AppEventType {
     ALL_INSTRUMENTS, INSTRUMENT,
     OPEN_POSITIONS, CLOSED_POSITIONS,
-
     MARKET_ORDER,
-
-    CASH, META
+    CASH, META,
+    CREATE_ACCOUNT, DELETE_ACCOUNT
 }

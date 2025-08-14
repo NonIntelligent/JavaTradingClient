@@ -2,6 +2,7 @@ package ui;
 
 import Data.Instrument;
 import Data.Position;
+import broker.ApiData;
 import core.*;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -102,6 +103,14 @@ public class FXLoading implements Consumer {
     public void sendBuyOrder(String id, float quantity) {
         try {
             eventChannel.publish(new Pair<>(id, quantity),AppEventType.MARKET_ORDER);
+        } catch (InterruptedException e) {
+            log.error("Event publishing was interrupted", e);
+        }
+    }
+
+    public void createAccount(String jsonApiData) {
+        try {
+            eventChannel.publish(jsonApiData, AppEventType.CREATE_ACCOUNT);
         } catch (InterruptedException e) {
             log.error("Event publishing was interrupted", e);
         }

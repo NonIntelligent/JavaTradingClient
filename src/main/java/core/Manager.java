@@ -4,11 +4,14 @@ import Data.Instrument;
 import Data.Position;
 import Data.Result;
 import broker.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import utility.AccountApiStore;
 import utility.Consumer;
 import utility.Settings;
 import utility.TaskExecutor;
@@ -20,6 +23,7 @@ import java.util.List;
 public class Manager implements Consumer {
     private static final Logger log = LoggerFactory.getLogger("application");
     private final EventChannel eventChannel;
+    private AccountApiStore apiStore;
     private ObjectMapper mapper;
     public List<String> instruments;
     public List<Account> accounts;
@@ -32,6 +36,7 @@ public class Manager implements Consumer {
         // Only UI needs to retain all the instruments to display
         instruments = new ArrayList<>(100);
         accounts = new ArrayList<>();
+        apiStore = new AccountApiStore(accounts);
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -39,8 +44,26 @@ public class Manager implements Consumer {
         dataRequester = new TaskExecutor(4);
     }
 
-    public Account createAccount() {
-        return new Account("",null,null);
+    public Account createAccount(String jsonData) {
+        try {
+            JsonNode node = mapper.readTree(jsonData);
+            Broker broker = Broker.get(node.get("broker").asText());
+            AccountType type = AccountType.valueOf(node.get("type").asText());
+            String apiKey = node.get("apiKey").asText();
+            String apiID = node.get("apiID").asText();
+
+            TradingAPI api = ApiFactory.getApi(broker, type, apiKey, apiID);
+
+            Account newAccount = new Account(apiKey, api, type);
+            activeAccount = newAccount;
+            accounts.add(newAccount);
+
+            return newAccount;
+        } catch (JsonProcessingException e) {
+            log.error("Invalid JSON data for parsing when creating an account\n" + jsonData, e);
+        }
+
+        return null;
     }
 
     public void beginProcessing() {
@@ -105,6 +128,7 @@ public class Manager implements Consumer {
         switch (event.type()) {
             case MARKET_ORDER -> {Pair<String, Float> a = (Pair<String, Float>) event.data();
                 placeMarketOrder(a.getKey(), a.getValue());}
+            case CREATE_ACCOUNT -> {createAccount((String) event.data());}
         }
     }
 
