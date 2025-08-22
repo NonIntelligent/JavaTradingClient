@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utility.AccountApiStore;
 import utility.Consumer;
-import utility.Settings;
 import utility.TaskExecutor;
 
 import java.io.IOException;
@@ -44,7 +43,7 @@ public class Manager implements Consumer {
         dataRequester = new TaskExecutor(4);
     }
 
-    public Account createAccount(String jsonData) {
+    public Account createAccountFromJSON(String jsonData) {
         try {
             JsonNode node = mapper.readTree(jsonData);
             Broker broker = Broker.get(node.get("broker").asText());
@@ -54,7 +53,7 @@ public class Manager implements Consumer {
 
             TradingAPI api = ApiFactory.getApi(broker, type, apiKey, apiID);
 
-            Account newAccount = new Account(apiKey, api, type);
+            Account newAccount = new Account(api, type, apiKey, apiID);
             activeAccount = newAccount;
             accounts.add(newAccount);
 
@@ -71,41 +70,53 @@ public class Manager implements Consumer {
         // TODO replace with timer to check for valid API
         // Then setup tasks and refresh data based on interval
 
-        // TODO load auth data from file if it exists, else do nothing
-        //  get broker name/enum that the api is linked to
-        //  get Account Type from connection Controller checkbox.
-        Broker broker = Broker.TRADING212;
-        AccountType type = AccountType.DEMO;
-        String key = Settings.getInstance().getApiKey();
-        String apiID = "";
-
-        TradingAPI api = ApiFactory.getApi(broker, type, key, apiID);
-        Account acc = new Account(key, api, type);
-        activeAccount = acc;
-
-        accounts.add(acc);
-
-        Result result = acc.tradingApi.fetchInstruments();
-
-        /* TODO setup json parsing to organise list of instruments and send to FXLoader.
-        FxLoader to LandingController to display */
-        if (result.isOK()) {
-            try {
-                Instrument[] instruments = mapper.readValue(result.content(), Instrument[].class);
-                eventChannel.publish(instruments, AppEventType.ALL_INSTRUMENTS);
-            } catch (IOException e) {
-                log.error("JSON parsing failed to read result contents", e);
-            } catch (InterruptedException e) {
-                log.error("Event publishing was interrupted", e);
-            }
-
+        // TODO present user dialog for password entry. (prompt can be ignored).
+        try {
+            loadAccountsFromCache("");
+        } catch (IOException e) {
+            log.error("Failed to read account data from JSON file", e);
         }
 
-        dataRequester.scheduleDelayedTask(this::retrieveOpenOrders, 500L, 5000L);
+        if (activeAccount != null) {
+            Result result = activeAccount.tradingApi.fetchInstruments();
+        /* TODO setup json parsing to organise list of instruments and send to FXLoader.
+        FxLoader to LandingController to display */
+            if (result.isOK()) {
+                try {
+                    Instrument[] instruments = mapper.readValue(result.content(), Instrument[].class);
+                    eventChannel.publish(instruments, AppEventType.ALL_INSTRUMENTS);
+                } catch (IOException e) {
+                    log.error("JSON parsing failed to read result contents", e);
+                } catch (InterruptedException e) {
+                    log.error("Event publishing was interrupted", e);
+                }
 
+            }
+        }
+
+
+        dataRequester.scheduleDelayedTask(this::retrieveOpenOrders, 500L, 5000L);
+    }
+
+    // Recreates all accounts from the cache. First item loaded is considered active.
+    public void loadAccountsFromCache(String password) throws IOException {
+        List<ApiData> apiDataList = apiStore.loadStoredAPIs(password);
+        if (apiDataList.isEmpty()) {
+            // Pop up error about no entries due to bad data or no accounts saved
+            return;
+        }
+        // Create accounts from the loaded data
+        for (ApiData data : apiDataList) {
+            Account acc = new Account(data);
+            accounts.add(acc);
+        }
+
+        activeAccount = accounts.getFirst();
     }
 
     public void retrieveOpenOrders() {
+        if (activeAccount == null) return;
+
         Result result = activeAccount.tradingApi.fetchOrders();
 
         /* TODO setup json parsing to organise list of instruments and send to FXLoader.
@@ -128,7 +139,8 @@ public class Manager implements Consumer {
         switch (event.type()) {
             case MARKET_ORDER -> {Pair<String, Float> a = (Pair<String, Float>) event.data();
                 placeMarketOrder(a.getKey(), a.getValue());}
-            case CREATE_ACCOUNT -> {createAccount((String) event.data());}
+            case CREATE_ACCOUNT -> {
+                createAccountFromJSON((String) event.data());}
         }
     }
 
@@ -138,5 +150,10 @@ public class Manager implements Consumer {
 
     public void stop() {
         dataRequester.shutdown();
+        try {
+            apiStore.saveAPIsToFile(accounts);
+        } catch (IOException e) {
+            log.error("Could not save api data to file", e);
+        }
     }
 }

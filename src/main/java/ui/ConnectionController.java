@@ -7,7 +7,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
-import utility.Settings;
 
 import java.net.URL;
 import java.util.ResourceBundle;

@@ -1,4 +1,4 @@
 package broker;
 
-public record ApiData(String key, TradingAPI tradingAPI, AccountType type) {
+public record ApiData(TradingAPI tradingAPI, AccountType type, String key, String keyID) {
 }

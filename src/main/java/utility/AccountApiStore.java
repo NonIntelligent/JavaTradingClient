@@ -20,11 +20,14 @@ import java.util.List;
 public class AccountApiStore {
     private static final Logger log = LoggerFactory.getLogger("FileIO");
     private final String apiFilePath;
+    private final File apiCache;
     private final ObjectMapper mapper;
 
     public AccountApiStore(List<Account> accounts) {
         apiFilePath = Thread.currentThread().getContextClassLoader().getResource("").getPath()
                 + "accounts.json";
+
+        apiCache = new File(apiFilePath);
 
         mapper = new ObjectMapper();
         // Create and register custom serialize modules
@@ -45,9 +48,9 @@ public class AccountApiStore {
 
     // Save APIData class into a JSON file
     public void saveAPIsToFile(List<Account> accounts) throws IOException {
-        // Check if file needs to be created
-        File file = new File(apiFilePath);
-        boolean creation = file.createNewFile();
+        if (!apiCache.exists()){
+            boolean created = apiCache.createNewFile();
+        }
 
         // TODO maybe add id to avoid duplicate accounts
 
@@ -55,23 +58,26 @@ public class AccountApiStore {
         List<ApiData> apiDataList = new ArrayList<>(accounts.size());
         // TODO Encrypt api key using the client's password as key
         for (Account acc : accounts){
-            apiDataList.add(acc.apiData);
+            apiDataList.add(acc.getApiData());
         }
-
+        log.info("Saving account data to file");
         // Write data to file
-        mapper.writeValue(file, apiDataList);
+        mapper.writeValue(apiCache, apiDataList);
     }
 
     public List<ApiData> loadStoredAPIs(String password) throws IOException {
-        // check if file exists and if there are any entries
-        File file = new File(apiFilePath);
+        List<ApiData> storedAPIs = new ArrayList<>();
+
         // TODO notes for encryption implementation
         //  ask for password on start-up if a JSON file exists and decrypt keys/create accounts
         //  do a small metadata api call to see if password/key is correct
         //  When saving, ask for password and check result against existing result in file
+
+        if (!apiCache.exists()) return storedAPIs;
         // Read each entry and decrypt api keys with custom deserializer
         List<ApiData> badEntries = new ArrayList<>();
-        List<ApiData> storedAPIs = mapper.readValue(file, new TypeReference<List<ApiData>>() {});
+        log.info("Reading from api cache file");
+        storedAPIs = mapper.readValue(apiCache, new TypeReference<>() {});
 
         // Null check from deserialization results
         for (ApiData data : storedAPIs){
@@ -88,6 +94,10 @@ public class AccountApiStore {
     // Deletes the JSON file containing the API information
     public void removeAllAccounts(){}
 
+    public boolean checkCacheExists() {
+        return apiCache.exists();
+    }
+
     class ApiDataSerializer extends StdSerializer<ApiData> {
         public ApiDataSerializer(Class<ApiData> classObj) {
             super(classObj);
@@ -98,9 +108,10 @@ public class AccountApiStore {
                               SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeStartObject();
             // TODO encrypt API key here
-            jsonGenerator.writeStringField("key", apiData.key());
             jsonGenerator.writeStringField("broker", apiData.tradingAPI().broker.name());
             jsonGenerator.writeStringField("type", apiData.type().name());
+            jsonGenerator.writeStringField("key", apiData.key());
+            jsonGenerator.writeStringField("keyID", apiData.keyID());
             jsonGenerator.writeEndObject();
         }
     }
@@ -127,6 +138,9 @@ public class AccountApiStore {
                 return null;
             }
 
+            // Optional id for the secret key. Can be null or empty.
+            String keyID = node.get("keyID").asText();
+
             String parsedText = node.get("broker").asText();
             Broker broker;
             AccountType type;
@@ -144,9 +158,9 @@ public class AccountApiStore {
             String keyResult = hashedKey;
 
             // Construct TradingAPI object from information
-            TradingAPI tradingAPI = ApiFactory.getApi(broker, type, keyResult, "");
+            TradingAPI tradingAPI = ApiFactory.getApi(broker, type, keyResult, keyID);
 
-            return new ApiData(keyResult, tradingAPI, type);
+            return new ApiData(tradingAPI, type, keyResult, keyID);
         }
     }
 
