@@ -3,15 +3,17 @@ package ui;
 import Data.Instrument;
 import Data.Position;
 import broker.Account;
+import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +32,12 @@ public class LandingController extends UIController {
 
     public LandingController(FXLoading fxLoader) {
         super(fxLoader);
+    }
+
+    @Override
+    public void loadCSS(Scene scene) {
+        var styles = scene.getStylesheets();
+        styles.add(getClass().getResource("/client.css").toExternalForm());
     }
 
     @Override
@@ -127,8 +135,8 @@ public class LandingController extends UIController {
         }
     }
 
-    public void addAccountToTable(Account acc) {
-        fx_accounts.getItems().add(acc);
+    public void setAccountTableData(ObservableList<Account> accounts) {
+        fx_accounts.setItems(accounts);
     }
 
     public void openChart(String ticker) {

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
 
@@ -28,6 +29,11 @@ public class ConnectionController extends UIController {
 
     public ConnectionController(FXLoading fxLoader) {
         super(fxLoader);
+    }
+
+    @Override
+    public void loadCSS(Scene scene) {
+
     }
 
     @Override

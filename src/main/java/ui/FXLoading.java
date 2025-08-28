@@ -2,9 +2,11 @@ package ui;
 
 import Data.Instrument;
 import Data.Position;
+import broker.Account;
 import broker.ApiData;
 import core.*;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -16,6 +18,7 @@ import utility.Consumer;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 public class FXLoading implements Consumer {
     private static final Logger log = LoggerFactory.getLogger("ui");
@@ -50,6 +53,8 @@ public class FXLoading implements Consumer {
             // Cleanup
             Platform.exit();
         });
+
+        controller.loadCSS(mainWindow.getScene());
 
         log.info("UI Launched");
         mainWindow.show();
@@ -106,6 +111,11 @@ public class FXLoading implements Consumer {
         } catch (InterruptedException e) {
             log.error("Event publishing was interrupted", e);
         }
+    }
+
+    public void addAllAccountsToTable(ObservableList<Account> accounts){
+        LandingController landing = (LandingController) controllers.get("Landing");
+        landing.setAccountTableData(accounts);
     }
 
     public void createAccount(String jsonApiData) {

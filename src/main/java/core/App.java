@@ -32,6 +32,7 @@ public class App extends Application {
         log.info("Starting application and building interface");
         fxLoading.LoadLandingPage(stage);
         manager.beginProcessing();
+        fxLoading.addAllAccountsToTable(manager.getAccounts());
     }
 
     @Override

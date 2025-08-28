@@ -8,6 +8,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +27,7 @@ public class Manager implements Consumer {
     private AccountApiStore apiStore;
     private ObjectMapper mapper;
     public List<String> instruments;
-    public List<Account> accounts;
+    private ObservableList<Account> accounts;
     private Account activeAccount;
     private final TaskExecutor dataRequester;
 
@@ -34,7 +36,7 @@ public class Manager implements Consumer {
         // Possibly get rid of this copy of instruments.
         // Only UI needs to retain all the instruments to display
         instruments = new ArrayList<>(100);
-        accounts = new ArrayList<>();
+        accounts = FXCollections.observableArrayList();
         apiStore = new AccountApiStore(accounts);
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, true);
@@ -102,7 +104,8 @@ public class Manager implements Consumer {
     public void loadAccountsFromCache(String password) throws IOException {
         List<ApiData> apiDataList = apiStore.loadStoredAPIs(password);
         if (apiDataList.isEmpty()) {
-            // Pop up error about no entries due to bad data or no accounts saved
+            // TODO Pop up error about no entries due to bad data or no accounts saved
+            log.info("No accounts were loaded");
             return;
         }
         // Create accounts from the loaded data
@@ -156,4 +159,6 @@ public class Manager implements Consumer {
             log.error("Could not save api data to file", e);
         }
     }
+
+    public ObservableList<Account> getAccounts() {return accounts;}
 }
