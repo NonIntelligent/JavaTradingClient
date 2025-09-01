@@ -1,7 +1,6 @@
 package broker;
 
 import Data.Result;
-import com.fasterxml.jackson.core.JsonParser;
 import core.ApiHandler;
 
 import java.io.IOException;
@@ -21,7 +20,7 @@ public class Trading212 extends TradingAPI {
         //  data is to be retrieved by the method caller
         methodTimeouts = new HashMap<>();
         try {
-            methodTimeouts.put(this.getClass().getMethod("fetchOrders"), 5000L);
+            methodTimeouts.put(this.getClass().getMethod("fetchPositions"), 5000L);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
@@ -35,8 +34,14 @@ public class Trading212 extends TradingAPI {
     }
 
     @Override
-    public Result fetchOrders() {
+    public Result fetchPositions() {
         final String requestURI = baseURI + "/portfolio";
+        return executeGetRequest(requestURI);
+    }
+
+    @Override
+    public Result fetchOrders() {
+        final String requestURI = baseURI + "/orders";
         return executeGetRequest(requestURI);
     }
 

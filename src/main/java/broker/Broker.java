@@ -29,7 +29,7 @@ public enum Broker {
         }
     }
 
-    public static Broker get(String name){
+    public static Broker get(String name) {
         return enumMap.get(name);
     }
 

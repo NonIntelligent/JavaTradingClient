@@ -24,6 +24,7 @@ public abstract class TradingAPI {
     }
 
     public abstract Result fetchInstruments();
+    public abstract Result fetchPositions();
     public abstract Result fetchOrders();
     public abstract Result fetchAccountCash();
     public abstract Result fetchAccountMeta();

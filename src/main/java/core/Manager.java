@@ -120,7 +120,7 @@ public class Manager implements Consumer {
     public void retrieveOpenOrders() {
         if (activeAccount == null) return;
 
-        Result result = activeAccount.tradingApi.fetchOrders();
+        Result result = activeAccount.tradingApi.fetchPositions();
 
         /* TODO setup json parsing to organise list of instruments and send to FXLoader.
         FxLoader to LandingController to display */
