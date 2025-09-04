@@ -46,25 +46,27 @@ public class Manager implements Consumer {
         dataRequester = new TaskExecutor(4);
     }
 
-    public Account createAccountFromJSON(String jsonData) {
-        try {
-            JsonNode node = mapper.readTree(jsonData);
-            Broker broker = Broker.get(node.get("broker").asText());
-            AccountType type = AccountType.valueOf(node.get("type").asText());
-            String apiKey = node.get("apiKey").asText();
-            String apiID = node.get("apiID").asText();
+    public Account createAccountFromJSON(Object data) {
+        if (data instanceof String jsonData) {
+            try {
+                JsonNode node = mapper.readTree(jsonData);
+                Broker broker = Broker.get(node.get("broker").asText());
+                AccountType type = AccountType.valueOf(node.get("type").asText());
+                String apiKey = node.get("apiKey").asText();
+                String apiID = node.get("apiID").asText();
 
-            TradingAPI api = ApiFactory.getApi(broker, type, apiKey, apiID);
+                TradingAPI api = ApiFactory.getApi(broker, type, apiKey, apiID);
 
-            Account newAccount = new Account(api, type, apiKey, apiID);
-            activeAccount = newAccount;
-            accounts.add(newAccount);
+                Account newAccount = new Account(api, type, apiKey, apiID);
+                activeAccount = newAccount;
+                accounts.add(newAccount);
 
-            return newAccount;
-        } catch (JsonProcessingException e) {
-            log.error("Invalid JSON data for parsing when creating an account\n" + jsonData, e);
+                return newAccount;
+            } catch (JsonProcessingException e) {
+                log.error("Invalid JSON data for parsing when creating an account\n" + jsonData, e);
+            }
+
         }
-
         return null;
     }
 
@@ -140,11 +142,13 @@ public class Manager implements Consumer {
 
     @Override
     public void processEvent(AppEvent event) {
+        if (event.data() == null) {
+            log.error("AppEvent possesses null object as data");
+            return;
+        }
         switch (event.type()) {
-            case MARKET_ORDER -> {Pair<String, Float> a = (Pair<String, Float>) event.data();
-                placeMarketOrder(a.getKey(), a.getValue());}
-            case CREATE_ACCOUNT -> {
-                createAccountFromJSON((String) event.data());}
+            case MARKET_ORDER -> {placeMarketOrder(event.data());}
+            case CREATE_ACCOUNT -> {createAccountFromJSON(event.data());}
         }
     }
 
@@ -154,8 +158,14 @@ public class Manager implements Consumer {
         eventChannel.subscribeToEvent(this, AppEventType.CREATE_ACCOUNT);
     }
 
-    public void placeMarketOrder(String id, float quantity) {
-        activeAccount.tradingApi.placeMarketOrder(id, quantity);
+    public void placeMarketOrder(Object targetStock) {
+        Pair<String, Float> idAndValue;
+        if (!(targetStock instanceof Pair)) {
+            log.error("Bad data casting. Passed object is required to be Pair<String, Float>");
+            return;
+        }
+        idAndValue = (Pair<String, Float>) targetStock;
+        activeAccount.tradingApi.placeMarketOrder(idAndValue.getKey(), idAndValue.getValue());
     }
 
     public void stop() {

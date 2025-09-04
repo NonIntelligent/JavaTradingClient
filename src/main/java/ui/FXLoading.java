@@ -88,9 +88,13 @@ public class FXLoading implements Consumer {
 
     @Override
     public void processEvent(AppEvent event) {
+        if (event.data() == null) {
+            log.error("AppEvent possesses null object as data");
+            return;
+        }
         switch (event.type()) {
-            case ALL_INSTRUMENTS -> showAllTickers((Instrument[]) event.data());
-            case OPEN_POSITIONS -> showAllOrders((Position[]) event.data());
+            case ALL_INSTRUMENTS -> showAllTickers(event.data());
+            case OPEN_POSITIONS -> showAllOrders(event.data());
         }
     }
 
@@ -100,14 +104,24 @@ public class FXLoading implements Consumer {
         eventChannel.subscribeToEvent(this, AppEventType.OPEN_POSITIONS);
     }
 
-    public void showAllTickers(Instrument[] instruments) {
-        LandingController landing = (LandingController) controllers.get("Landing");
-        landing.updateTickers(instruments);
+    public void showAllTickers(Object instrumentArray) {
+        if (instrumentArray instanceof Instrument[] instruments) {
+            LandingController landing = (LandingController) getController("Landing");
+            if (landing == null) return;
+            landing.updateTickers(instruments);
+        } else {
+            log.error("Bad data casting. Given object was not Instruments[]");
+        }
     }
 
-    public void showAllOrders(Position[] positions) {
-        LandingController landing = (LandingController) controllers.get("Landing");
-        landing.updateOrders(positions);
+    public void showAllOrders(Object positionArray) {
+        if (positionArray instanceof Position[] positions) {
+            LandingController landing = (LandingController) getController("Landing");
+            if (landing == null) return;
+            landing.updateOrders(positions);
+        } else {
+            log.error("Bad data casting. Given object was not Position[]");
+        }
     }
 
     public void sendBuyOrder(String id, float quantity) {
@@ -129,5 +143,13 @@ public class FXLoading implements Consumer {
         } catch (InterruptedException e) {
             log.error("Event publishing was interrupted", e);
         }
+    }
+
+    public UIController getController(String nameKey) {
+        UIController controller = controllers.get(nameKey);
+        if (controller == null) log.error(nameKey + " controller has not been created." +
+                " Incorrect name or not part of list.");
+
+        return controller;
     }
 }
