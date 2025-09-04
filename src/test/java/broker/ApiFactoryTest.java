@@ -4,14 +4,12 @@ import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ApiFactoryTest {
     /**
      * Tests all Broker enums to see if they are constructable by the factory.
      * This does mean the class needs to be fully feature implemented.
      */
     @Test
-    @Order(1)
     void are_all_apis_constructable() {
         assertDoesNotThrow(() ->{
             for (Broker broker: Broker.values()){
@@ -27,7 +25,6 @@ class ApiFactoryTest {
      * !!!
      */
     @Test
-    @Order(2)
     void does_broker_type_match_api() {
         for (Broker broker: Broker.values()) {
             TradingAPI api;

@@ -19,8 +19,8 @@ public class App extends Application {
         manager = new Manager(eventChannel);
         fxLoading = new FXLoading(eventChannel);
 
-        eventChannel.subscribe(manager);
-        eventChannel.subscribe(fxLoading);
+        eventChannel.connectToService(manager);
+        eventChannel.connectToService(fxLoading);
     }
 
     @Override

@@ -3,12 +3,13 @@ package core;
 import utility.Consumer;
 import utility.TaskExecutor;
 
-import java.util.List;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.concurrent.*;
 
 public class EventChannel {
     private final BlockingQueue<AppEvent> events = new LinkedBlockingQueue<>();
-    private final List<Consumer> consumers = new CopyOnWriteArrayList<>();
+    private final HashMap<Consumer, EnumSet<AppEventType>> consumers = new HashMap<>();
     private final TaskExecutor eventProcessor = new TaskExecutor(3);
 
     public void publish(AppEvent event) throws InterruptedException {
@@ -22,16 +23,24 @@ public class EventChannel {
         eventProcessor.submitTask(this::notifySubscribers);
     }
 
-    public void subscribe(Consumer consumer) {
-        consumers.add(consumer);
+    public void connectToService(Consumer consumer) {
+        EnumSet<AppEventType> subscribed = EnumSet.noneOf(AppEventType.class);
+        consumers.put(consumer, subscribed);
+    }
+
+    public void subscribeToEvent(Consumer consumer, AppEventType type) {
+        EnumSet<AppEventType> acceptedEvents = consumers.get(consumer);
+        if (acceptedEvents != null) acceptedEvents.add(type);
     }
 
     private void notifySubscribers() {
         AppEvent event = events.poll();
         if (event == null) return;
 
-        for (Consumer consumer : consumers) {
-            consumer.processEvent(event);
+        for (var entry : consumers.entrySet()) {
+            if (!entry.getValue().contains(event.type())) continue;
+
+            entry.getKey().processEvent(event);
         }
     }
 

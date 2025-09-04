@@ -3,7 +3,6 @@ package ui;
 import Data.Instrument;
 import Data.Position;
 import broker.Account;
-import broker.ApiData;
 import core.*;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -18,7 +17,6 @@ import utility.Consumer;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 
 public class FXLoading implements Consumer {
     private static final Logger log = LoggerFactory.getLogger("ui");
@@ -28,6 +26,7 @@ public class FXLoading implements Consumer {
 
     public FXLoading(EventChannel eventChannel) {
         this.eventChannel = eventChannel;
+        startUpSubscribedEvents();
         controllers = new HashMap<>(2);
     }
 
@@ -93,6 +92,12 @@ public class FXLoading implements Consumer {
             case ALL_INSTRUMENTS -> showAllTickers((Instrument[]) event.data());
             case OPEN_POSITIONS -> showAllOrders((Position[]) event.data());
         }
+    }
+
+    @Override
+    public void startUpSubscribedEvents() {
+        eventChannel.subscribeToEvent(this, AppEventType.ALL_INSTRUMENTS);
+        eventChannel.subscribeToEvent(this, AppEventType.OPEN_POSITIONS);
     }
 
     public void showAllTickers(Instrument[] instruments) {

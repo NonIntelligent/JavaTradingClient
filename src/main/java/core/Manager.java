@@ -33,6 +33,7 @@ public class Manager implements Consumer {
 
     Manager(EventChannel eventChannel) {
         this.eventChannel = eventChannel;
+        startUpSubscribedEvents();
         // Possibly get rid of this copy of instruments.
         // Only UI needs to retain all the instruments to display
         instruments = new ArrayList<>(100);
@@ -145,6 +146,12 @@ public class Manager implements Consumer {
             case CREATE_ACCOUNT -> {
                 createAccountFromJSON((String) event.data());}
         }
+    }
+
+    @Override
+    public void startUpSubscribedEvents() {
+        eventChannel.subscribeToEvent(this, AppEventType.MARKET_ORDER);
+        eventChannel.subscribeToEvent(this, AppEventType.CREATE_ACCOUNT);
     }
 
     public void placeMarketOrder(String id, float quantity) {
