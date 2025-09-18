@@ -6,9 +6,11 @@ import broker.Account;
 import core.*;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import org.slf4j.Logger;
@@ -26,8 +28,7 @@ public class FXLoading implements Consumer {
 
     public FXLoading(EventChannel eventChannel) {
         this.eventChannel = eventChannel;
-        startUpSubscribedEvents();
-        controllers = new HashMap<>(2);
+        controllers = new HashMap<>(4);
     }
 
     public void LoadLandingPage(Stage appStage) {
@@ -84,6 +85,16 @@ public class FXLoading implements Consumer {
         });
 
         connection.show();
+    }
+
+    public void createOrderMenu() {
+        OrderController controller = (OrderController) controllers.get("Order");
+        if (controller == null) {
+            controller = new OrderController(this);
+            controllers.put("Order", controller);
+        }
+
+        controller.showMenu();
     }
 
     @Override

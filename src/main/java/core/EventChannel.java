@@ -30,7 +30,9 @@ public class EventChannel {
 
     public void subscribeToEvent(Consumer consumer, AppEventType type) {
         EnumSet<AppEventType> acceptedEvents = consumers.get(consumer);
-        if (acceptedEvents != null) acceptedEvents.add(type);
+        if (acceptedEvents != null) {
+            acceptedEvents.add(type);
+        }
     }
 
     private void notifySubscribers() {

@@ -32,11 +32,6 @@ public class ConnectionController extends UIController {
     }
 
     @Override
-    public void loadCSS(Scene scene) {
-
-    }
-
-    @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // TODO - Store API token securely and auto reconnect
         for (Broker b : Broker.values()) {
@@ -81,13 +76,4 @@ public class ConnectionController extends UIController {
         fxLoaderRef.createAccount(acc.toPrettyString());
     }
 
-    private void applyInputSanitation(TextField textField, String regex) {
-        textField.setTextFormatter(new TextFormatter<String>(change -> {
-            String newText = change.getControlNewText();
-            // Return modified string
-            if (newText.matches(regex)) {return change;}
-            // Invalid input
-            return null;
-        }));
-    }
 }

@@ -33,7 +33,6 @@ public class Manager implements Consumer {
 
     Manager(EventChannel eventChannel) {
         this.eventChannel = eventChannel;
-        startUpSubscribedEvents();
         // Possibly get rid of this copy of instruments.
         // Only UI needs to retain all the instruments to display
         instruments = new ArrayList<>(100);

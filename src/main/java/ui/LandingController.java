@@ -4,7 +4,6 @@ import Data.Instrument;
 import Data.Position;
 import broker.Account;
 import javafx.collections.ObservableList;
-import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -38,7 +37,7 @@ public class LandingController extends UIController {
     @Override
     public void loadCSS(Scene scene) {
         var styles = scene.getStylesheets();
-        styles.add(getClass().getResource("/client.css").toExternalForm());
+        //styles.add(getClass().getResource("/debug.css").toExternalForm());
     }
 
     @Override
@@ -98,7 +97,7 @@ public class LandingController extends UIController {
         buySellItem.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                buyStock(inst.ticker, 0.1f);
+                openOrderMenu(inst.ticker, 0.1f);
             }
         });
 
@@ -116,9 +115,10 @@ public class LandingController extends UIController {
         return ticker;
     }
 
-    public void buyStock(String id, float quantity) {
+    public void openOrderMenu(String id, float quantity) {
         log.info("Sending buy order of {}:{}", quantity, id);
-        fxLoaderRef.sendBuyOrder(id, quantity);
+        fxLoaderRef.createOrderMenu();
+        //fxLoaderRef.sendBuyOrder(id, quantity);
     }
 
     public void sellStock() {

@@ -21,6 +21,8 @@ public class App extends Application {
 
         eventChannel.connectToService(manager);
         eventChannel.connectToService(fxLoading);
+        manager.startUpSubscribedEvents();
+        fxLoading.startUpSubscribedEvents();
     }
 
     @Override
