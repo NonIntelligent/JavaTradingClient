@@ -1,6 +1,7 @@
 package ui;
 
 import Data.Instrument;
+import Data.Order;
 import Data.Position;
 import broker.Account;
 import javafx.collections.ObservableList;
@@ -25,8 +26,8 @@ public class LandingController extends UIController {
     @FXML private MenuBar fx_titleMenu;
     @FXML private TableView<Account> fx_accounts;
     @FXML private ListView<MenuButton> fx_tickers;
-    @FXML private TableView<Position> fx_openOrders;
-    @FXML private TableView<Position> fx_closedOrders;
+    @FXML private TableView<Position> fx_positions;
+    @FXML private TableView<Order> fx_orders;
     @FXML private TabPane fx_chartsTabPane;
     private Stage mainStage;
 
@@ -42,6 +43,22 @@ public class LandingController extends UIController {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        fx_tickers.setCellFactory(lv -> new ListCell<MenuButton>() {
+            @Override
+            protected void updateItem(MenuButton item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null && !empty) {
+                    item.prefWidthProperty().bind(lv.widthProperty().subtract(28));
+                    item.setMaxWidth(Control.USE_PREF_SIZE);
+                    setGraphic(item);
+                    setTooltip(item.getTooltip());
+                } else {
+                    setGraphic(null);
+                    setTooltip(null);
+                }
+            }
+        });
+        setupTablePositions();
         setupTableOrders();
         setupTableAccounts();
     }
@@ -57,11 +74,27 @@ public class LandingController extends UIController {
         mainStage.close();
     }
 
-    private void setupTableOrders() {
-        fx_openOrders.setPlaceholder(new Label("No rows to display"));
-        var columns = fx_openOrders.getColumns();
-        columns.get(0).setCellValueFactory(new PropertyValueFactory<>("ticker"));
+    private void setupTablePositions() {
+        fx_positions.setPlaceholder(new Label("No open positions"));
+        var columns = fx_positions.getColumns();
+        columns.get(0).setCellValueFactory(new PropertyValueFactory<>("symbol"));
         columns.get(1).setCellValueFactory(new PropertyValueFactory<>("currentPrice"));
+        columns.get(2).setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        columns.get(3).setCellValueFactory(new PropertyValueFactory<>("avgEntry"));
+        columns.get(4).setCellValueFactory(new PropertyValueFactory<>("profitLoss"));
+    }
+
+    private void setupTableOrders() {
+        fx_orders.setPlaceholder(new Label("No recent orders"));
+        var columns = fx_orders.getColumns();
+        columns.get(0).setCellValueFactory(new PropertyValueFactory<>("symbol"));
+        columns.get(1).setCellValueFactory(new PropertyValueFactory<>("creationTime"));
+        columns.get(2).setCellValueFactory(new PropertyValueFactory<>("executionType"));
+        columns.get(3).setCellValueFactory(new PropertyValueFactory<>("side"));
+        columns.get(4).setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        columns.get(5).setCellValueFactory(new PropertyValueFactory<>("status"));
+        columns.get(6).setCellValueFactory(new PropertyValueFactory<>("filledValue"));
+        columns.get(7).setCellValueFactory(new PropertyValueFactory<>("filledTime"));
     }
 
     private void setupTableAccounts() {
@@ -91,13 +124,14 @@ public class LandingController extends UIController {
     private MenuButton createTickerButton(Instrument inst) {
         // TODO change from buttons to tilted panes
         //  content is buy/sell options
-        String text = inst.ticker + "     " + inst.type + "     " + inst.currencyCode;
+        String text = inst.symbol;
         MenuButton ticker = new MenuButton(text);
+        ticker.setTooltip(new Tooltip(inst.name));
         MenuItem buySellItem = new MenuItem("Create Order");
         buySellItem.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                openOrderMenu(inst.ticker, 0.1f);
+                openOrderMenu(inst.symbol, 0.1f);
             }
         });
 
@@ -105,7 +139,7 @@ public class LandingController extends UIController {
         openChart.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                openChart(inst.ticker);
+                openChart(inst.symbol);
             }
         });
 
@@ -118,21 +152,29 @@ public class LandingController extends UIController {
     public void openOrderMenu(String id, float quantity) {
         log.info("Sending buy order of {}:{}", quantity, id);
         fxLoaderRef.createOrderMenu();
-        //fxLoaderRef.sendBuyOrder(id, quantity);
+    }
+
+    public void updateOrders(Order[] orders) {
+        var list = fx_orders.getItems();
+        list.clear();
+        // Populate list with new items
+        for (int i = 0; i < orders.length; i++) {
+            Order order = orders[i];
+            fx_orders.getItems().add(order);
+        }
     }
 
     public void sellStock() {
 
     }
 
-    public void updateOrders(Position[] positions) {
-        // TODO get tableview from Orders tab and populate
-        var list = fx_openOrders.getItems();
+    public void updatePositions(Position[] positions) {
+        var list = fx_positions.getItems();
         list.clear();
         // Populate list with new items
         for (int i = 0; i < positions.length; i++) {
             Position position = positions[i];
-            fx_openOrders.getItems().add(position);
+            fx_positions.getItems().add(position);
         }
     }
 

@@ -1,31 +1,55 @@
 package Data;
 
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import utility.DeserializeWrap;
+
+import java.io.IOException;
+
+@JsonDeserialize(using = PositionDeserializer.class)
 public class Position {
-    private Float currentPrice;
-    private Float quantity;
-    private String ticker;
+    public String symbol;
+    public String currentPrice;
+    public String quantity;
+    public String marketValue;
+    public String avgEntry;
+    public String profitLoss;
 
-    public Float getCurrentPrice() {
-        return currentPrice;
+    public String getSymbol() {return symbol;}
+    public String getCurrentPrice() {return currentPrice;}
+    public String getQuantity() {return quantity;}
+    public String getMarketValue() {return marketValue;}
+    public String getAvgEntry() {return avgEntry;}
+    public String getProfitLoss() {return profitLoss;}
+}
+
+class PositionDeserializer extends DeserializeWrap<Position> {
+    public PositionDeserializer(){this(null);}
+    public PositionDeserializer(Class<Position> classObj) {
+        super(classObj);
     }
 
-    public void setCurrentPrice(Float currentPrice) {
-        this.currentPrice = currentPrice;
-    }
+    @Override
+    public Position deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+        JsonNode node = p.getCodec().readTree(p);
 
-    public Float getQuantity() {
-        return quantity;
-    }
+        // Create and populate Position data from json string
+        Position pos = new Position();
 
-    public void setQuantity(Float quantity) {
-        this.quantity = quantity;
-    }
+        pos.quantity = node.get("qty").asText();
+        pos.currentPrice = node.get("current_price").asText();
+        pos.marketValue = node.get("market_value").asText();
+        pos.avgEntry = node.get("avg_entry_price").asText();
+        pos.profitLoss = node.get("unrealized_pl").asText();
 
-    public String getTicker() {
-        return ticker;
-    }
+        JsonNode symbolNode = node.get("symbol");
+        if (symbolNode == null) symbolNode = node.get("ticker");
+        pos.symbol = symbolNode.asText();
 
-    public void setTicker(String ticker) {
-        this.ticker = ticker;
+        return pos;
     }
 }

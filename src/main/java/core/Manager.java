@@ -1,6 +1,7 @@
 package core;
 
 import Data.Instrument;
+import Data.Order;
 import Data.Position;
 import Data.Result;
 import broker.*;
@@ -82,6 +83,7 @@ public class Manager implements Consumer {
         }
 
         if (activeAccount != null) {
+            // TODO get account metadata and cash for all
             Result result = activeAccount.tradingApi.fetchInstruments();
         /* TODO setup json parsing to organise list of instruments and send to FXLoader.
         FxLoader to LandingController to display */
@@ -98,8 +100,8 @@ public class Manager implements Consumer {
             }
         }
 
-
-        dataRequester.scheduleDelayedTask(this::retrieveOpenOrders, 500L, 5000L);
+        dataRequester.scheduleDelayedTask(this::retrieveOpenPositions, 500L, 5000L);
+        dataRequester.scheduleDelayedTask(this::retrieveOrders, 500L, 10000L);
     }
 
     // Recreates all accounts from the cache. First item loaded is considered active.
@@ -107,7 +109,7 @@ public class Manager implements Consumer {
         List<ApiData> apiDataList = apiStore.loadStoredAPIs(password);
         if (apiDataList.isEmpty()) {
             // TODO Pop up error about no entries due to bad data or no accounts saved
-            log.info("No accounts were loaded");
+            log.info("No accounts were loaded as list was empty.");
             return;
         }
         // Create accounts from the loaded data
@@ -119,7 +121,7 @@ public class Manager implements Consumer {
         activeAccount = accounts.getFirst();
     }
 
-    public void retrieveOpenOrders() {
+    public void retrieveOpenPositions() {
         if (activeAccount == null) return;
 
         Result result = activeAccount.tradingApi.fetchPositions();
@@ -130,6 +132,24 @@ public class Manager implements Consumer {
             try {
                 Position[] position = mapper.readValue(result.content(), Position[].class);
                 eventChannel.publish(position, AppEventType.OPEN_POSITIONS);
+            } catch (IOException e) {
+                log.error("JSON parsing failed to read result contents", e);
+            } catch (InterruptedException e) {
+                log.error("Event publishing was interrupted", e);
+            }
+
+        }
+    }
+
+    public void retrieveOrders() {
+        if (activeAccount == null) return;
+
+        Result result = activeAccount.tradingApi.fetchOrders();
+
+        if (result.isOK()) {
+            try {
+                Order[] orders = mapper.readValue(result.content(), Order[].class);
+                eventChannel.publish(orders, AppEventType.ALL_ORDERS);
             } catch (IOException e) {
                 log.error("JSON parsing failed to read result contents", e);
             } catch (InterruptedException e) {

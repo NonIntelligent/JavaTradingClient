@@ -50,6 +50,12 @@ public class AccountApiStore {
     public void saveAPIsToFile(List<Account> accounts) throws IOException {
         if (!apiCache.exists()){
             boolean created = apiCache.createNewFile();
+            log.info("Creating new API cache file (accounts.json).");
+        }
+
+        if (accounts.isEmpty()) {
+            log.info("Skipping save process. No accounts were loaded.");
+            return;
         }
 
         // TODO maybe add id to avoid duplicate accounts

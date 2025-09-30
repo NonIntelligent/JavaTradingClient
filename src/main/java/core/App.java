@@ -45,6 +45,7 @@ public class App extends Application {
         eventChannel.shutdown();
         // Terminate/close all connections
         ApiHandler.terminate();
+        System.exit(0);
     }
 
     public static void main (String[] args){

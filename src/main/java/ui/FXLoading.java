@@ -1,16 +1,15 @@
 package ui;
 
 import Data.Instrument;
+import Data.Order;
 import Data.Position;
 import broker.Account;
 import core.*;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import org.slf4j.Logger;
@@ -42,6 +41,7 @@ public class FXLoading implements Consumer {
             root = application.load();
         } catch (IOException e) {
             log.error("Failed to load application.fxml", e);
+            Platform.exit();
         }
 
         controllers.put("Landing", controller);
@@ -50,7 +50,6 @@ public class FXLoading implements Consumer {
         mainWindow.setScene(new Scene(root));
         mainWindow.setOnCloseRequest(windowEvent -> {
             log.info("Stage is closing");
-            // Cleanup
             Platform.exit();
         });
 
@@ -105,7 +104,8 @@ public class FXLoading implements Consumer {
         }
         switch (event.type()) {
             case ALL_INSTRUMENTS -> showAllTickers(event.data());
-            case OPEN_POSITIONS -> showAllOrders(event.data());
+            case OPEN_POSITIONS -> showAllPositions(event.data());
+            case ALL_ORDERS -> showAllOrders(event.data());
         }
     }
 
@@ -113,6 +113,7 @@ public class FXLoading implements Consumer {
     public void startUpSubscribedEvents() {
         eventChannel.subscribeToEvent(this, AppEventType.ALL_INSTRUMENTS);
         eventChannel.subscribeToEvent(this, AppEventType.OPEN_POSITIONS);
+        eventChannel.subscribeToEvent(this, AppEventType.ALL_ORDERS);
     }
 
     public void showAllTickers(Object instrumentArray) {
@@ -125,13 +126,23 @@ public class FXLoading implements Consumer {
         }
     }
 
-    public void showAllOrders(Object positionArray) {
+    public void showAllPositions(Object positionArray) {
         if (positionArray instanceof Position[] positions) {
             LandingController landing = (LandingController) getController("Landing");
             if (landing == null) return;
-            landing.updateOrders(positions);
+            landing.updatePositions(positions);
         } else {
             log.error("Bad data casting. Given object was not Position[]");
+        }
+    }
+
+    public void showAllOrders(Object orderArray) {
+        if (orderArray instanceof Order[] orders) {
+            LandingController landing = (LandingController) getController("Landing");
+            if (landing == null) return;
+            landing.updateOrders(orders);
+        } else {
+            log.error("Bad data casting. Given object was not Order[]");
         }
     }
 

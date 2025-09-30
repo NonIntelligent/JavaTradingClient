@@ -13,7 +13,7 @@
                      filename="logs/TradingClient-${date:yyyy-MM-dd}.log"
                      filepattern="logs/TradingClient-%d{yyyy-MM-dd}(%i).log">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>
-            <DefaultRolloverStrategy max="5"/>
+            <DefaultRolloverStrategy max="3"/>
             <Policies>
                 <OnStartupTriggeringPolicy/>
             </Policies>
