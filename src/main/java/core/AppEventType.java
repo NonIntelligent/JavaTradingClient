@@ -1,10 +1,14 @@
 package core;
 
 public enum AppEventType {
+    // Broker and API related events
     ALL_INSTRUMENTS, INSTRUMENT,
     OPEN_POSITIONS, CLOSED_POSITIONS,
-    ALL_ORDERS,
-    MARKET_ORDER,
+    ALL_ORDERS, MARKET_ORDER_BUY, MARKET_ORDER_SELL,
+    LATEST_STOCK_QUOTE,
     CASH, META,
-    CREATE_ACCOUNT, DELETE_ACCOUNT
+    CREATE_ACCOUNT, DELETE_ACCOUNT,
+
+    // Application events
+    TASK_GET, TASK_CANCEL
 }

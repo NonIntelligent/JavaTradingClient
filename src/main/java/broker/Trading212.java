@@ -58,7 +58,12 @@ public class Trading212 extends TradingAPI {
     }
 
     @Override
-    public Result placeMarketOrder(String ticker, float quantity) {
+    public Result fetchStockData(String[] tickers) {
+        return null;
+    }
+
+    @Override
+    public Result placeMarketOrder(String ticker, String quantity, OrderType orderType, boolean isBuy) {
         final String requestURI = baseURI + "/orders/market";
 
         String stringQuantity = String.format(" \"quantity\": %.1f,", quantity);
@@ -66,11 +71,7 @@ public class Trading212 extends TradingAPI {
 
         String payload = String.join("\n","{", stringQuantity, stringTicker,"}");
 
-        try {
-            return ApiHandler.executeApiPostRequest(requestURI, payload, headers);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return executePostRequest(requestURI, payload);
     }
 
 }

@@ -39,8 +39,26 @@ public class Alpaca extends TradingAPI {
     }
 
     @Override
-    public Result placeMarketOrder(String ticker, float quantity) {
-        final String requestURI = baseURI + "/";
+    public Result fetchStockData(String[] tickers) {
+        String allSymbols = String.join("%2C", tickers);
+        String requestURI = "https://data.alpaca.markets/v2/stocks/quotes/latest?symbols=" + allSymbols;
         return executeGetRequest(requestURI);
+    }
+
+    @Override
+    public Result placeMarketOrder(String ticker, String quantity, OrderType orderType, boolean isBuy) {
+        final String requestURI = baseURI + "/orders";
+        String alpacaExecution = orderType.name().toLowerCase();
+        String type = String.format("{\"type\":\"%s\"", alpacaExecution);
+        String timeInForce = String.format("\"time_in_force\":\"day\"");
+        String symbolName = String.format("\"symbol\":\"%s\"", ticker);
+        String amount = String.format("\"qty\":\"%s\"", quantity);
+        String buyOrSell = isBuy ? "buy" : "sell";
+        String side = String.format("\"side\":\"%s\"}", buyOrSell);
+
+        String payload = String.join(",",
+                type, timeInForce, symbolName, amount, side);
+
+        return executePostRequest(requestURI, payload);
     }
 }

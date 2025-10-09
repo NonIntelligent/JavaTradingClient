@@ -23,6 +23,7 @@ public abstract class DeserializeWrap<T> extends StdDeserializer<T> {
 
     protected String obtainDate(JsonNode node, String field, String defaultValue) {
         String rawTime = obtainText(node, field, defaultValue);
+        if (rawTime == null) return defaultValue;
         Instant instant = Instant.parse(rawTime);
         LocalDate date = LocalDate.ofInstant(instant, ZoneId.systemDefault());
         return date.toString();

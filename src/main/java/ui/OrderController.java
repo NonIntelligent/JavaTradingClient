@@ -1,13 +1,16 @@
 package ui;
 
+import Data.Quote;
+import broker.OrderType;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -19,18 +22,37 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.concurrent.Future;
 
 public class OrderController extends UIController {
     private final Stage stage;
+    private final BorderPane rootNode;
+    private Text title;
+    private TextField volumeInput;
+    private ComboBox<String> execution;
+    private Text buyPrice;
+    private Text sellPrice;
 
     public OrderController(FXLoading fxLoader) {
         super(fxLoader);
         stage = new Stage();
-        Parent root = buildMenuLayout();
+        rootNode = buildMenuLayout();
 
-        Scene orderScene = new Scene(root, 600, 400);
+        Scene orderScene = new Scene(rootNode, 600, 400);
         stage.setScene(orderScene);
-        stage.setTitle("Buy Sell Orders");
+        stage.setTitle("Create an Order");
+        stage.setOnCloseRequest(windowEvent -> {
+            while (stage.getUserData() == null) {
+                try {
+                    wait(1000L);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+            if (stage.getUserData() == null) return;
+
+            fxLoaderRef.cancelTask(stage.getUserData());
+        });
     }
 
     @Override
@@ -38,13 +60,13 @@ public class OrderController extends UIController {
 
     }
 
-    private Parent buildMenuLayout() {
+    private BorderPane buildMenuLayout() {
         BorderPane borderPane = new BorderPane();
         //borderPane.getStylesheets().add(OrderController.class.getResource("/debug.css").toString());
         borderPane.setPadding(new Insets(80, 0, 80, 0));
 
         // Add title text
-        Text title = new Text("Symbol: Name of asset");
+        title = new Text("Symbol: Name of asset");
         title.getStyleClass().add("text");
         title.setFont(new Font("System", 24));
         title.setTextAlignment(TextAlignment.CENTER);
@@ -61,12 +83,13 @@ public class OrderController extends UIController {
         flowPane.prefWidth(600);
 
         final String volumeRegex = "-?\\d*(\\.\\d{0,2})?";
-        TextField volumeInput = new TextField();
+        volumeInput = new TextField();
         applyInputSanitation(volumeInput, volumeRegex);
+        volumeInput.setPromptText("Volume e.g. 1.00");
 
-        // TODO add new enum for market execution types
-        ComboBox<String> execution = new ComboBox<>();
+        execution = new ComboBox<>();
         execution.setPromptText("Market Execution");
+        execution.getItems().add(OrderType.MARKET.toString());
 
         flowPane.getChildren().add(volumeInput);
         flowPane.getChildren().add(execution);
@@ -91,11 +114,13 @@ public class OrderController extends UIController {
         buySection.getStyleClass().add("vbox");
         buySection.prefWidth(100);
         buySection.setFillWidth(true);
-        Text buyPrice = new Text("Bid price");
+        buyPrice = new Text("Buy price");
         buyPrice.setFont(new Font("System", 18));
         Button buyOrder = new Button("Buy order");
+        buyOrder.setOnAction(this::sendBuyOrder);
         buySection.getChildren().add(buyPrice);
         buySection.getChildren().add(buyOrder);
+
 
         VBox divider = new VBox();
         divider.getStyleClass().add("vbox");
@@ -109,9 +134,10 @@ public class OrderController extends UIController {
         sellSection.getStyleClass().add("vbox");
         sellSection.prefWidth(100);
         sellSection.setFillWidth(true);
-        Text sellPrice = new Text("Ask price");
+        sellPrice = new Text("Sell price");
         sellPrice.setFont(new Font("System", 18));
         Button sellOrder = new Button("Sell order");
+        sellOrder.setOnAction(this::sendSellOrder);
         sellSection.getChildren().add(sellPrice);
         sellSection.getChildren().add(sellOrder);
 
@@ -122,7 +148,54 @@ public class OrderController extends UIController {
         return hbox;
     }
 
+    public void updateTitleName(String symbol) {
+        Text title = (Text) rootNode.getTop();
+        title.setText("Stock: " + symbol);
+        title.setUserData(symbol);
+    }
+
+    public void updatePriceData(Quote quote) {
+        buyPrice.setText("Buy Price: " + quote.askPrice);
+        buyPrice.setUserData(quote.askPrice);
+        sellPrice.setText("Sell Price: " + quote.bidPrice);
+        sellPrice.setUserData(quote.bidPrice);
+    }
+
+    public void sendBuyOrder(ActionEvent event) {
+        String symbol = (String) title.getUserData();
+        String quantity = volumeInput.getText();
+        String selectedExecutionType = execution.getValue();
+
+        if (selectedExecutionType == null) return;
+        OrderType type = OrderType.fromString(execution.getValue());
+
+        if (symbol == null) return;
+        if (quantity.isBlank()) return;
+
+        fxLoaderRef.postBuyOrder(symbol, quantity, type);
+    }
+
+    public void sendSellOrder(ActionEvent event) {
+        String symbol = (String) title.getUserData();
+        String quantity = volumeInput.getText();
+        OrderType type = OrderType.fromString(execution.getValue());
+
+        if (symbol == null) return;
+        if (quantity.isBlank()) return;
+
+        fxLoaderRef.postSellOrder(symbol, quantity, type);
+    }
+
     public void showMenu() {
+        stage.requestFocus();
         stage.show();
+    }
+
+    public boolean isVisible() {
+        return stage.isShowing();
+    }
+
+    public void setUserDataStage(Object obj) {
+        stage.setUserData(obj);
     }
 }

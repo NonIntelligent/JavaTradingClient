@@ -3,7 +3,9 @@ package ui;
 import Data.Instrument;
 import Data.Order;
 import Data.Position;
+import Data.Quote;
 import broker.Account;
+import broker.OrderType;
 import core.*;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -11,13 +13,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utility.Consumer;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.Future;
 
 public class FXLoading implements Consumer {
     private static final Logger log = LoggerFactory.getLogger("ui");
@@ -86,11 +89,20 @@ public class FXLoading implements Consumer {
         connection.show();
     }
 
-    public void createOrderMenu() {
+    public void createOrderMenu(Instrument instrument) {
         OrderController controller = (OrderController) controllers.get("Order");
         if (controller == null) {
             controller = new OrderController(this);
             controllers.put("Order", controller);
+        }
+
+        controller.updateTitleName(instrument.symbol);
+
+        try {
+            eventChannel.publish(instrument, AppEventType.LATEST_STOCK_QUOTE, this);
+        } catch (InterruptedException e) {
+            // TODO display pop-up error for user
+            log.error("Could not publish order info event", e);
         }
 
         controller.showMenu();
@@ -106,6 +118,8 @@ public class FXLoading implements Consumer {
             case ALL_INSTRUMENTS -> showAllTickers(event.data());
             case OPEN_POSITIONS -> showAllPositions(event.data());
             case ALL_ORDERS -> showAllOrders(event.data());
+            case LATEST_STOCK_QUOTE -> updateStockPrices(event.data());
+            case TASK_GET -> stopGettingOrderInfoOnClose(event.data());
         }
     }
 
@@ -114,6 +128,8 @@ public class FXLoading implements Consumer {
         eventChannel.subscribeToEvent(this, AppEventType.ALL_INSTRUMENTS);
         eventChannel.subscribeToEvent(this, AppEventType.OPEN_POSITIONS);
         eventChannel.subscribeToEvent(this, AppEventType.ALL_ORDERS);
+        eventChannel.subscribeToEvent(this, AppEventType.LATEST_STOCK_QUOTE);
+        eventChannel.subscribeToEvent(this, AppEventType.TASK_GET);
     }
 
     public void showAllTickers(Object instrumentArray) {
@@ -146,9 +162,34 @@ public class FXLoading implements Consumer {
         }
     }
 
-    public void sendBuyOrder(String id, float quantity) {
+    public void updateStockPrices(Object stockQuote) {
+        if (stockQuote instanceof Quote quote) {
+            OrderController order = (OrderController) getController("Order");
+            if (order == null || !order.isVisible()) return;
+            order.updatePriceData(quote);
+        } else {
+            log.error("Bad data casting. Given object was not Quote");
+        }
+    }
+
+    public void stopGettingOrderInfoOnClose(Object futureObject) {
+        Future<?> future = (Future<?>) futureObject;
+        OrderController order = (OrderController) getController("Order");
+
+        order.setUserDataStage(future);
+    }
+
+    public void postBuyOrder(String id, String quantity, OrderType type) {
         try {
-            eventChannel.publish(new Pair<>(id, quantity),AppEventType.MARKET_ORDER);
+            eventChannel.publish(new ImmutableTriple<>(id, quantity, type),AppEventType.MARKET_ORDER_BUY, this);
+        } catch (InterruptedException e) {
+            log.error("Event publishing was interrupted", e);
+        }
+    }
+
+    public void postSellOrder(String id, String quantity, OrderType type) {
+        try {
+            eventChannel.publish(new ImmutableTriple<>(id, quantity, type),AppEventType.MARKET_ORDER_SELL, this);
         } catch (InterruptedException e) {
             log.error("Event publishing was interrupted", e);
         }
@@ -161,7 +202,15 @@ public class FXLoading implements Consumer {
 
     public void createAccount(String jsonApiData) {
         try {
-            eventChannel.publish(jsonApiData, AppEventType.CREATE_ACCOUNT);
+            eventChannel.publish(jsonApiData, AppEventType.CREATE_ACCOUNT, this);
+        } catch (InterruptedException e) {
+            log.error("Event publishing was interrupted", e);
+        }
+    }
+
+    public void cancelTask(Object future) {
+        try {
+            eventChannel.publish(future, AppEventType.TASK_CANCEL, this);
         } catch (InterruptedException e) {
             log.error("Event publishing was interrupted", e);
         }

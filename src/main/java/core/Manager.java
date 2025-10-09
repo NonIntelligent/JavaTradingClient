@@ -1,9 +1,6 @@
 package core;
 
-import Data.Instrument;
-import Data.Order;
-import Data.Position;
-import Data.Result;
+import Data.*;
 import broker.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -12,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utility.AccountApiStore;
@@ -20,7 +18,11 @@ import utility.TaskExecutor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.Stream;
 
 public class Manager implements Consumer {
     private static final Logger log = LoggerFactory.getLogger("application");
@@ -82,23 +84,7 @@ public class Manager implements Consumer {
             log.error("Failed to read account data from JSON file", e);
         }
 
-        if (activeAccount != null) {
-            // TODO get account metadata and cash for all
-            Result result = activeAccount.tradingApi.fetchInstruments();
-        /* TODO setup json parsing to organise list of instruments and send to FXLoader.
-        FxLoader to LandingController to display */
-            if (result.isOK()) {
-                try {
-                    Instrument[] instruments = mapper.readValue(result.content(), Instrument[].class);
-                    eventChannel.publish(instruments, AppEventType.ALL_INSTRUMENTS);
-                } catch (IOException e) {
-                    log.error("JSON parsing failed to read result contents", e);
-                } catch (InterruptedException e) {
-                    log.error("Event publishing was interrupted", e);
-                }
-
-            }
-        }
+        retrieveAllInstruments(activeAccount);
 
         dataRequester.scheduleDelayedTask(this::retrieveOpenPositions, 500L, 5000L);
         dataRequester.scheduleDelayedTask(this::retrieveOrders, 500L, 10000L);
@@ -121,6 +107,34 @@ public class Manager implements Consumer {
         activeAccount = accounts.getFirst();
     }
 
+    public void retrieveAllInstruments(Account acc) {
+        if (acc != null) {
+            // TODO get account metadata and cash for all
+            Result result = acc.tradingApi.fetchInstruments();
+            if (result.isOK()) {
+                try {
+                    Instrument[] instruments = mapper.readValue(result.content(), Instrument[].class);
+                    ArrayList<Instrument> instrumentsList = new ArrayList<>();
+
+                    for (Instrument inst : instruments) {
+                        if (inst.tradable && inst.getType().equals("us_equity")) {
+                            instrumentsList.add(inst);
+                        }
+                    }
+
+                    Instrument[] filteredInstruments = instrumentsList.toArray(new Instrument[0]);
+
+                    eventChannel.publish(filteredInstruments, AppEventType.ALL_INSTRUMENTS, this);
+                } catch (IOException e) {
+                    log.error("JSON parsing failed to read result contents", e);
+                } catch (InterruptedException e) {
+                    log.error("Event publishing was interrupted", e);
+                }
+
+            }
+        }
+    }
+
     public void retrieveOpenPositions() {
         if (activeAccount == null) return;
 
@@ -131,7 +145,7 @@ public class Manager implements Consumer {
         if (result.isOK()) {
             try {
                 Position[] position = mapper.readValue(result.content(), Position[].class);
-                eventChannel.publish(position, AppEventType.OPEN_POSITIONS);
+                eventChannel.publish(position, AppEventType.OPEN_POSITIONS, this);
             } catch (IOException e) {
                 log.error("JSON parsing failed to read result contents", e);
             } catch (InterruptedException e) {
@@ -149,14 +163,57 @@ public class Manager implements Consumer {
         if (result.isOK()) {
             try {
                 Order[] orders = mapper.readValue(result.content(), Order[].class);
-                eventChannel.publish(orders, AppEventType.ALL_ORDERS);
-            } catch (IOException e) {
+                eventChannel.publish(orders, AppEventType.ALL_ORDERS, this);
+            } catch (JsonProcessingException e) {
                 log.error("JSON parsing failed to read result contents", e);
             } catch (InterruptedException e) {
                 log.error("Event publishing was interrupted", e);
             }
 
         }
+    }
+
+    public void fetchLatestStockQuote(Object instruments) {
+        if (activeAccount == null) return;
+        Instrument inst = (Instrument) instruments;
+        String[] symbols = {inst.symbol};
+
+        Result result = activeAccount.tradingApi.fetchStockData(symbols);
+
+        if (result.isOK()) {
+            try {
+                Quote quote = mapper.readValue(result.content(), Quote.class);
+                eventChannel.publish(quote, AppEventType.LATEST_STOCK_QUOTE, this);
+            } catch (JsonProcessingException e) {
+                log.error("JSON parsing failed to read result contents", e);
+            } catch (InterruptedException e) {
+                log.error("Event publishing was interrupted", e);
+            }
+        }
+    }
+
+    private void scheduleStockQuoteRetrieval(Object instruments) {
+        Future<?> future = dataRequester.scheduleDelayedTask(() -> {fetchLatestStockQuote(instruments);},
+                100L, 1000L);
+        try {
+            eventChannel.publish(future, AppEventType.TASK_GET, this);
+        } catch (InterruptedException e) {
+            dataRequester.cancelTask(future, false);
+            log.error("Manager was interrupted and could not send Quote task event to FX Loading", e);
+        }
+    }
+
+    public void cancelTask(Object future) {
+        if (future == null) {
+            log.debug("Null future object was sent to Manager");
+            return;
+        }
+
+        Future<?> task = (Future<?>) future;
+
+        boolean cancelled = dataRequester.cancelTask(task, true);
+
+        log.info("Task cancelled status {}", cancelled);
     }
 
     @Override
@@ -166,25 +223,32 @@ public class Manager implements Consumer {
             return;
         }
         switch (event.type()) {
-            case MARKET_ORDER -> {placeMarketOrder(event.data());}
+            case MARKET_ORDER_BUY -> {placeMarketOrder(event.data(), true);}
+            case MARKET_ORDER_SELL -> {placeMarketOrder(event.data(), false);}
             case CREATE_ACCOUNT -> {createAccountFromJSON(event.data());}
+            case LATEST_STOCK_QUOTE -> {scheduleStockQuoteRetrieval(event.data());}
+            case TASK_CANCEL -> {cancelTask(event.data());}
         }
     }
 
     @Override
     public void startUpSubscribedEvents() {
-        eventChannel.subscribeToEvent(this, AppEventType.MARKET_ORDER);
+        eventChannel.subscribeToEvent(this, AppEventType.MARKET_ORDER_BUY);
+        eventChannel.subscribeToEvent(this, AppEventType.MARKET_ORDER_SELL);
         eventChannel.subscribeToEvent(this, AppEventType.CREATE_ACCOUNT);
+        eventChannel.subscribeToEvent(this, AppEventType.LATEST_STOCK_QUOTE);
+        eventChannel.subscribeToEvent(this, AppEventType.TASK_CANCEL);
     }
 
-    public void placeMarketOrder(Object targetStock) {
-        Pair<String, Float> idAndValue;
-        if (!(targetStock instanceof Pair)) {
-            log.error("Bad data casting. Passed object is required to be Pair<String, Float>");
+    public void placeMarketOrder(Object targetStock, boolean isBuy) {
+        Triple<String, String, OrderType> orderData;
+        if (!(targetStock instanceof Triple<?,?,?>)) {
+            log.error("Bad data casting. Object is required to be Triple<String, String, OrderType>");
             return;
         }
-        idAndValue = (Pair<String, Float>) targetStock;
-        activeAccount.tradingApi.placeMarketOrder(idAndValue.getKey(), idAndValue.getValue());
+        orderData = (Triple<String, String, OrderType>) targetStock;
+        activeAccount.tradingApi.placeMarketOrder(orderData.getLeft(),
+                orderData.getMiddle(), orderData.getRight(), isBuy);
     }
 
     public void stop() {

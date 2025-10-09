@@ -126,12 +126,17 @@ public class LandingController extends UIController {
         //  content is buy/sell options
         String text = inst.symbol;
         MenuButton ticker = new MenuButton(text);
+        if (inst.name == null) {
+            boolean nullable = true;
+            log.error("Instrument name is null");
+        }
         ticker.setTooltip(new Tooltip(inst.name));
+        ticker.setUserData(inst);
         MenuItem buySellItem = new MenuItem("Create Order");
         buySellItem.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                openOrderMenu(inst.symbol, 0.1f);
+                openOrderMenu(ticker);
             }
         });
 
@@ -149,9 +154,9 @@ public class LandingController extends UIController {
         return ticker;
     }
 
-    public void openOrderMenu(String id, float quantity) {
-        log.info("Sending buy order of {}:{}", quantity, id);
-        fxLoaderRef.createOrderMenu();
+    public void openOrderMenu(MenuButton ticker) {
+        log.info("Creating order menu");
+        fxLoaderRef.createOrderMenu((Instrument) ticker.getUserData());
     }
 
     public void updateOrders(Order[] orders) {

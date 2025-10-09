@@ -30,8 +30,29 @@ public class TaskExecutor {
         return threadPool.scheduleWithFixedDelay(task, startDelay, delayBetweenTasks, TimeUnit.MILLISECONDS);
     }
 
+    public boolean isSuccessful(Future<?> future) {
+        boolean success = false;
+        try {
+            future.get();
+            success = true;
+        } catch (InterruptedException e) {
+            log.debug("The current thread was interrupted whist waiting.", e);
+        } catch (ExecutionException e) {
+            log.error("The task itself had an issue during execution", e);
+        } catch (CancellationException e) {
+            log.debug("Task was cancelled", e);
+        }
+
+        return success;
+    }
+
+    public boolean cancelTask(Future<?> future, boolean mayInterrupt) {
+        future.cancel(mayInterrupt);
+        return future.isCancelled();
+    }
+
     public void shutdown() {
-        log.info("  Terminating and shutting down executor pool");
+        log.info("Terminating and shutting down executor pool");
         threadPool.purge();
         threadPool.shutdown();
         try {

@@ -17,8 +17,8 @@ public class EventChannel {
         eventProcessor.submitTask(this::notifySubscribers);
     }
 
-    public void publish(Object data, AppEventType type) throws InterruptedException {
-        AppEvent event = new AppEvent(data, type);
+    public void publish(Object data, AppEventType type, Consumer sender) throws InterruptedException {
+        AppEvent event = new AppEvent(data, type, sender);
         events.put(event);
         eventProcessor.submitTask(this::notifySubscribers);
     }
@@ -40,9 +40,14 @@ public class EventChannel {
         if (event == null) return;
 
         for (var entry : consumers.entrySet()) {
-            if (!entry.getValue().contains(event.type())) continue;
+            Consumer consumer = entry.getKey();
+            EnumSet<AppEventType> acceptedEvents = entry.getValue();
+            // Skip consumers that haven't subscribed to this event type
+            if (!acceptedEvents.contains(event.type())) continue;
+            // Skip sender of the event
+            if (event.sender() == consumer) continue;
 
-            entry.getKey().processEvent(event);
+            consumer.processEvent(event);
         }
     }
 

@@ -29,11 +29,20 @@ public abstract class TradingAPI {
     public abstract Result fetchAccountCash();
     public abstract Result fetchAccountMeta();
 
-    public abstract Result placeMarketOrder(String ticker, float quantity);
+    public abstract Result fetchStockData(String[] tickers);
+    public abstract Result placeMarketOrder(String ticker, String quantity, OrderType orderType, boolean isBuy);
 
     protected final Result executeGetRequest(String requestURI) {
         try {
             return ApiHandler.executeApiGetRequest(requestURI, headers);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected final Result executePostRequest(String requestURI, String payload) {
+        try {
+            return ApiHandler.executeApiPostRequest(requestURI, payload, headers);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

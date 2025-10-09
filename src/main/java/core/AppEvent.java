@@ -1,3 +1,5 @@
 package core;
 
-public record AppEvent(Object data, AppEventType type) { }
+import utility.Consumer;
+
+public record AppEvent(Object data, AppEventType type, Consumer sender) { }

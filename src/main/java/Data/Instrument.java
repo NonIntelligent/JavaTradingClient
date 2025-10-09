@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import utility.DeserializeWrap;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @JsonDeserialize(using = InstrumentDeserializer.class)
 public class Instrument {
@@ -17,10 +18,13 @@ public class Instrument {
     public String shortName;
     public String symbol;
     public String type;
+    public boolean tradable;
 
     public String getSymbol() {return symbol;}
     public String getName() {return name;}
+    public String getType() {return type;}
     public String getCurrencyCode() {return currencyCode;}
+    public boolean getTradable() {return tradable;}
 }
 
 class InstrumentDeserializer extends DeserializeWrap<Instrument> {
@@ -42,6 +46,7 @@ class InstrumentDeserializer extends DeserializeWrap<Instrument> {
         inst.symbol = symbolNode.asText();
 
         inst.type = node.get("class").asText();
+        inst.tradable = node.get("tradable").asBoolean(false);
 
         return inst;
     }

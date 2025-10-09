@@ -55,8 +55,8 @@ public class EventsTest {
             Manager manager = (Manager) managerField.get(app);
             FXLoading fxLoading = (FXLoading) fxLoadingField.get(app);
 
-            manager.processEvent(new AppEvent(null, type));
-            fxLoading.processEvent(new AppEvent(null, type));
+            manager.processEvent(new AppEvent(null, type, manager));
+            fxLoading.processEvent(new AppEvent(null, type, fxLoading));
             // Get all class implementations of Consumer and check if they are present in this list
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
