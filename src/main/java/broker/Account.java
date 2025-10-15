@@ -13,9 +13,9 @@ public class Account {
 
     public String accountID;
     public String currencyCode;
-    public int freeCash;
-    public int investedCash;
-    public int totalCash;
+    public double freeCash = 100;
+    public double investedCash = 200;
+    public double totalCash = freeCash + investedCash;
 
     public Account(TradingAPI tradingApi, AccountType accountType, String apiKey, String apiKeyID) {
         log.info("Creating account");
@@ -33,9 +33,9 @@ public class Account {
     public String getAccountID(){return accountID;}
     public String getCurrencyCode(){return currencyCode;}
     public String getBrokerName(){return tradingApi.broker.name;}
-    public Integer getFreeCash(){return freeCash;}
-    public Integer getInvestedCash(){return investedCash;}
-    public Integer getTotalCash(){return totalCash;}
+    public Double getFreeCash(){return freeCash;}
+    public Double getInvestedCash(){return investedCash;}
+    public Double getTotalCash(){return totalCash;}
     public ApiData getApiData() {return new ApiData(tradingApi, accountType, apiKey, apiKeyID);}
 }
 

@@ -110,16 +110,20 @@ public class FXLoading implements Consumer {
 
     @Override
     public void processEvent(AppEvent event) {
-        if (event.data() == null) {
-            log.error("AppEvent possesses null object as data");
+        final AppEventType[] nullableEvents = {AppEventType.REFRESH_TABLES};
+
+        if (event.data() == null && event.type() != AppEventType.REFRESH_TABLES) {
+            log.debug("AppEvent data is NULL of type {}", event.type());
             return;
         }
+
         switch (event.type()) {
             case ALL_INSTRUMENTS -> showAllTickers(event.data());
             case OPEN_POSITIONS -> showAllPositions(event.data());
             case ALL_ORDERS -> showAllOrders(event.data());
             case LATEST_STOCK_QUOTE -> updateStockPrices(event.data());
             case TASK_GET -> stopGettingOrderInfoOnClose(event.data());
+            case REFRESH_TABLES -> refreshAllTables();
         }
     }
 
@@ -130,6 +134,7 @@ public class FXLoading implements Consumer {
         eventChannel.subscribeToEvent(this, AppEventType.ALL_ORDERS);
         eventChannel.subscribeToEvent(this, AppEventType.LATEST_STOCK_QUOTE);
         eventChannel.subscribeToEvent(this, AppEventType.TASK_GET);
+        eventChannel.subscribeToEvent(this, AppEventType.REFRESH_TABLES);
     }
 
     public void showAllTickers(Object instrumentArray) {
@@ -179,6 +184,12 @@ public class FXLoading implements Consumer {
         order.setUserDataStage(future);
     }
 
+    public void refreshAllTables() {
+        LandingController landing = (LandingController) getController("Landing");
+        if (landing == null) return;
+        landing.refreshAllTables();
+    }
+
     public void postBuyOrder(String id, String quantity, OrderType type) {
         try {
             eventChannel.publish(new ImmutableTriple<>(id, quantity, type),AppEventType.MARKET_ORDER_BUY, this);
@@ -196,7 +207,7 @@ public class FXLoading implements Consumer {
     }
 
     public void addAllAccountsToTable(ObservableList<Account> accounts){
-        LandingController landing = (LandingController) controllers.get("Landing");
+        LandingController landing = (LandingController) getController("Landing");
         landing.setAccountTableData(accounts);
     }
 

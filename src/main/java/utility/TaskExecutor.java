@@ -26,7 +26,7 @@ public class TaskExecutor {
         return threadPool.scheduleAtFixedRate(task, startDelay, period, TimeUnit.MILLISECONDS);
     }
 
-    public ScheduledFuture<?> scheduleDelayedTask(Runnable task, long startDelay, long delayBetweenTasks) {
+    public ScheduledFuture<?> scheduleRepeatedDelayTask(Runnable task, long startDelay, long delayBetweenTasks) {
         return threadPool.scheduleWithFixedDelay(task, startDelay, delayBetweenTasks, TimeUnit.MILLISECONDS);
     }
 
@@ -51,21 +51,24 @@ public class TaskExecutor {
         return future.isCancelled();
     }
 
+    public void cancelAllTasks() {
+        threadPool.getQueue().clear();
+    }
+
     public void shutdown() {
         log.info("Terminating and shutting down executor pool");
-        threadPool.purge();
         threadPool.shutdown();
         try {
-            boolean terminated = threadPool.awaitTermination(1000L, TimeUnit.MILLISECONDS);
-            if (!terminated) threadPool.shutdownNow();
+            threadPool.awaitTermination(1000L, TimeUnit.MILLISECONDS);
+            threadPool.purge();
         } catch (InterruptedException e) {
             log.error("Current thread {} was interrupted whilst waiting for termination", Thread.currentThread(), e);
         }
     }
 
     public void shutdownNow() {
-        threadPool.purge();
         threadPool.shutdownNow();
+        threadPool.purge();
     }
 
 }

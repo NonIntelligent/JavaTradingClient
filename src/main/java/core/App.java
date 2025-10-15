@@ -33,6 +33,8 @@ public class App extends Application {
 
         log.info("Starting application and building interface");
         fxLoading.LoadLandingPage(stage);
+        // TODO present user dialog for password entry. (prompt can be ignored).
+        manager.loadAccountsFromCache("");
         manager.beginProcessing();
         fxLoading.addAllAccountsToTable(manager.getAccounts());
     }

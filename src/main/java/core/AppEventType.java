@@ -10,5 +10,6 @@ public enum AppEventType {
     CREATE_ACCOUNT, DELETE_ACCOUNT,
 
     // Application events
-    TASK_GET, TASK_CANCEL
+    TASK_GET, TASK_CANCEL,
+    REFRESH_TABLES
 }

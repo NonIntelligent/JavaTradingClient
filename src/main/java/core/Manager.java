@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.util.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,12 +16,11 @@ import utility.Consumer;
 import utility.TaskExecutor;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Stream;
 
 public class Manager implements Consumer {
     private static final Logger log = LoggerFactory.getLogger("application");
@@ -60,8 +58,10 @@ public class Manager implements Consumer {
                 TradingAPI api = ApiFactory.getApi(broker, type, apiKey, apiID);
 
                 Account newAccount = new Account(api, type, apiKey, apiID);
-                activeAccount = newAccount;
                 accounts.add(newAccount);
+                activeAccount = newAccount;
+
+                beginProcessing();
 
                 return newAccount;
             } catch (JsonProcessingException e) {
@@ -75,24 +75,25 @@ public class Manager implements Consumer {
     public void beginProcessing() {
         log.info("Start processing and fetching api data for the accounts");
         // TODO replace with timer to check for valid API
-        // Then setup tasks and refresh data based on interval
-
-        // TODO present user dialog for password entry. (prompt can be ignored).
-        try {
-            loadAccountsFromCache("");
-        } catch (IOException e) {
-            log.error("Failed to read account data from JSON file", e);
-        }
+        //   Then setup tasks and refresh data based on interval
+        dataRequester.cancelAllTasks();
 
         retrieveAllInstruments(activeAccount);
-
-        dataRequester.scheduleDelayedTask(this::retrieveOpenPositions, 500L, 5000L);
-        dataRequester.scheduleDelayedTask(this::retrieveOrders, 500L, 10000L);
+        dataRequester.scheduleRepeatedDelayTask(this::retrieveOpenPositions, 500L, 5000L);
+        dataRequester.scheduleRepeatedDelayTask(this::retrieveOrders, 500L, 10000L);
+        dataRequester.scheduleRepeatedDelayTask(this::fetchAccountCash, 100L, 3000L);
+        dataRequester.scheduleTask(this::fetchAccountMetadata, 100L);
     }
 
     // Recreates all accounts from the cache. First item loaded is considered active.
-    public void loadAccountsFromCache(String password) throws IOException {
-        List<ApiData> apiDataList = apiStore.loadStoredAPIs(password);
+    public void loadAccountsFromCache(String password) {
+        List<ApiData> apiDataList = new ArrayList<>();
+        try {
+            apiDataList = apiStore.loadStoredAPIs(password);
+        } catch (IOException e) {
+            log.error("Problem with reading JSON data.", e);
+        }
+
         if (apiDataList.isEmpty()) {
             // TODO Pop up error about no entries due to bad data or no accounts saved
             log.info("No accounts were loaded as list was empty.");
@@ -173,6 +174,62 @@ public class Manager implements Consumer {
         }
     }
 
+    public void fetchAccountCash() {
+        if (activeAccount == null) return;
+
+        Result result = activeAccount.tradingApi.fetchAccountCash();
+
+        if (result.isOK()) {
+            try {
+                // TODO generate cash data type?
+                //  Or look to instead update account data directly and let UI react using property
+                JsonNode node = mapper.readTree(result.content());
+                BigDecimal cash = new BigDecimal(node.get("cash").asText("0.00"));
+                cash.setScale(2, RoundingMode.UNNECESSARY);
+
+                BigDecimal total_cash = new BigDecimal(node.get("equity").asText("0.00"));
+                total_cash.setScale(2, RoundingMode.UNNECESSARY);
+
+                BigDecimal invested = total_cash.subtract(cash);
+                invested.setScale(2, RoundingMode.UNNECESSARY);
+
+                activeAccount.freeCash = cash.doubleValue();
+                activeAccount.totalCash = total_cash.doubleValue();
+                activeAccount.investedCash = invested.doubleValue();
+                eventChannel.publish(null, AppEventType.REFRESH_TABLES, this);
+            } catch (JsonProcessingException e) {
+                log.error("JSON parsing failed to read result contents", e);
+            } catch (InterruptedException e) {
+                log.error("Event publishing was interrupted", e);
+            }
+
+        }
+    }
+
+    public void fetchAccountMetadata() {
+        if (activeAccount == null) return;
+
+        Result result = activeAccount.tradingApi.fetchAccountMeta();
+
+        if (result.isOK()) {
+            try {
+                // TODO generate cash data type?
+                //  Or look to instead update account data directly and let UI react using property
+                JsonNode node = mapper.readTree(result.content());
+                String accountID = node.get("id").asText("UUID");
+                String currency = node.get("currency").asText("???");
+                activeAccount.accountID = accountID;
+                activeAccount.currencyCode = currency;
+                eventChannel.publish(null, AppEventType.REFRESH_TABLES, this);
+            } catch (JsonProcessingException e) {
+                log.error("JSON parsing failed to read result contents", e);
+            } catch (InterruptedException e) {
+                log.error("Event publishing was interrupted", e);
+            }
+
+        }
+    }
+
     public void fetchLatestStockQuote(Object instruments) {
         if (activeAccount == null) return;
         Instrument inst = (Instrument) instruments;
@@ -193,7 +250,7 @@ public class Manager implements Consumer {
     }
 
     private void scheduleStockQuoteRetrieval(Object instruments) {
-        Future<?> future = dataRequester.scheduleDelayedTask(() -> {fetchLatestStockQuote(instruments);},
+        Future<?> future = dataRequester.scheduleRepeatedDelayTask(() -> {fetchLatestStockQuote(instruments);},
                 100L, 1000L);
         try {
             eventChannel.publish(future, AppEventType.TASK_GET, this);
@@ -219,7 +276,7 @@ public class Manager implements Consumer {
     @Override
     public void processEvent(AppEvent event) {
         if (event.data() == null) {
-            log.error("AppEvent possesses null object as data");
+            log.error("AppEvent data is NULL of type {}", event.type());
             return;
         }
         switch (event.type()) {

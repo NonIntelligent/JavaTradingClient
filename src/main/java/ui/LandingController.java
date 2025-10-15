@@ -100,8 +100,10 @@ public class LandingController extends UIController {
     private void setupTableAccounts() {
         fx_accounts.setPlaceholder(new Label("No accounts to display."));
         var columns = fx_accounts.getColumns();
+        columns.get(0).setCellValueFactory(new PropertyValueFactory<>("accountID"));
         columns.get(1).setCellValueFactory(new PropertyValueFactory<>("brokerName"));
-        columns.get(3).setCellValueFactory(new PropertyValueFactory<>("freeCash"));
+        columns.get(2).setCellValueFactory(new PropertyValueFactory<>("currencyCode"));
+        columns.get(3).setCellValueFactory(new PropertyValueFactory<>("totalCash"));
         columns.get(4).setCellValueFactory(new PropertyValueFactory<>("investedCash"));
         columns.get(5).setCellValueFactory(new PropertyValueFactory<>("freeCash"));
     }
