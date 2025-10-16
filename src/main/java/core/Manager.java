@@ -273,12 +273,22 @@ public class Manager implements Consumer {
         log.info("Task cancelled status {}", cancelled);
     }
 
+    public void startDemoMode() {
+        // TODO Create fake account with demo API to return example data
+        dataRequester.cancelAllTasks();
+    }
+
     @Override
     public void processEvent(AppEvent event) {
+        switch (event.type()) {
+            case DEMO_APP -> {startDemoMode();}
+        }
+
         if (event.data() == null) {
             log.error("AppEvent data is NULL of type {}", event.type());
             return;
         }
+
         switch (event.type()) {
             case MARKET_ORDER_BUY -> {placeMarketOrder(event.data(), true);}
             case MARKET_ORDER_SELL -> {placeMarketOrder(event.data(), false);}
@@ -295,6 +305,7 @@ public class Manager implements Consumer {
         eventChannel.subscribeToEvent(this, AppEventType.CREATE_ACCOUNT);
         eventChannel.subscribeToEvent(this, AppEventType.LATEST_STOCK_QUOTE);
         eventChannel.subscribeToEvent(this, AppEventType.TASK_CANCEL);
+        eventChannel.subscribeToEvent(this, AppEventType.DEMO_APP);
     }
 
     public void placeMarketOrder(Object targetStock, boolean isBuy) {

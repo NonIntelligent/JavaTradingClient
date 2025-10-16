@@ -17,9 +17,13 @@ public class EventChannel {
         eventProcessor.submitTask(this::notifySubscribers);
     }
 
+    public void publish(AppEventType type, Consumer sender) throws InterruptedException {
+        events.put(new AppEvent(null, type, sender));
+        eventProcessor.submitTask(this::notifySubscribers);
+    }
+
     public void publish(Object data, AppEventType type, Consumer sender) throws InterruptedException {
-        AppEvent event = new AppEvent(data, type, sender);
-        events.put(event);
+        events.put(new AppEvent(data, type, sender));
         eventProcessor.submitTask(this::notifySubscribers);
     }
 

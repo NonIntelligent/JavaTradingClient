@@ -20,7 +20,7 @@
              <Menu mnemonicParsing="false" text="Commands">
                  <items>
                      <MenuItem mnemonicParsing="false" onAction="#openConnectionMenu" text="Connect" />
-                  <MenuItem mnemonicParsing="false" text="Demo App" />
+                  <MenuItem mnemonicParsing="false" onAction="#demoApplication" text="Demo App" />
                      <MenuItem mnemonicParsing="false" onAction="#closeApplication" text="Close" />
                  </items>
              </Menu>

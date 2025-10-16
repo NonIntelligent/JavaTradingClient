@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,10 +25,23 @@ public class AccountApiStore {
     private final ObjectMapper mapper;
 
     public AccountApiStore(List<Account> accounts) {
-        apiFilePath = Thread.currentThread().getContextClassLoader().getResource("").getPath()
+        String filePathTemp = Thread.currentThread().getContextClassLoader().getResource("").getPath()
                 + "accounts.json";
 
+        log.debug("Cache file location using Thread is {}", filePathTemp);
+        try {
+            filePathTemp = AccountApiStore.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()
+                    + "accounts.json";
+
+            log.debug("Cache file location using Thread is {}", filePathTemp);
+        } catch (URISyntaxException e) {
+            log.error("Error in creating file due to URI issue when getting path.", e);
+        }
+
+        apiFilePath = filePathTemp;
+
         apiCache = new File(apiFilePath);
+        log.debug("Cache file will be located at {}", apiFilePath);
 
         mapper = new ObjectMapper();
         // Create and register custom serialize modules
@@ -44,6 +58,7 @@ public class AccountApiStore {
 
         // Configure features of the mapper
         mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
+
     }
 
     // Save APIData class into a JSON file

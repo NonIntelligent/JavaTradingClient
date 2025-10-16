@@ -108,6 +108,14 @@ public class FXLoading implements Consumer {
         controller.showMenu();
     }
 
+    public void informManagerToSetupDemo() {
+        try {
+            eventChannel.publish(AppEventType.DEMO_APP, this);
+        } catch (InterruptedException e) {
+            log.error("Could not send {} event due to interruption", AppEventType.DEMO_APP, e);
+        }
+    }
+
     @Override
     public void processEvent(AppEvent event) {
         final AppEventType[] nullableEvents = {AppEventType.REFRESH_TABLES};

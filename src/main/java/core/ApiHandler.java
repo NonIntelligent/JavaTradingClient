@@ -63,6 +63,7 @@ public final class ApiHandler {
 
     public static void terminate() {
         try {
+            log.info("Terminating httpClient");
             httpClient.close();
         } catch (IOException e) {
             log.warn("Problem with closing Http client.", e);

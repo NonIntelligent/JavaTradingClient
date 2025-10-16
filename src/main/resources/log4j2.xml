@@ -20,22 +20,22 @@
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="application" level="info" additivity="false">
+        <Logger name="application" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="ConsoleErr"/>
             <AppenderRef ref="LogFile"/>
         </Logger>
-        <Logger name="ui" level="info" additivity="false">
+        <Logger name="ui" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="ConsoleErr"/>
             <AppenderRef ref="LogFile"/>
         </Logger>
-        <Logger name="api" level="info" additivity="false">
+        <Logger name="api" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="ConsoleErr"/>
             <AppenderRef ref="LogFile"/>
         </Logger>
-        <Logger name="FileIO" level="info" additivity="false">
+        <Logger name="FileIO" level="debug" additivity="false">
             <AppenderRef ref="ConsoleErr"/>
             <AppenderRef ref="LogFile"/>
         </Logger>

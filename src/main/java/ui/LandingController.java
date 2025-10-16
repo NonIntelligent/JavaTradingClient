@@ -69,6 +69,12 @@ public class LandingController extends UIController {
     }
 
     @FXML
+    private void demoApplication(ActionEvent e) {
+        // TODO clear all table data and lists
+        fxLoaderRef.informManagerToSetupDemo();
+    }
+
+    @FXML
     private void closeApplication(ActionEvent e) {
         mainStage = (Stage) fx_titleMenu.getScene().getWindow();
         mainStage.close();
