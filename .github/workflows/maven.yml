@@ -34,9 +34,11 @@ jobs:
         cache: maven
     - name: Verify application
       run: mvn -B verify -DskipTests -f pom.xml
-    - name: Create target directory
-      run: mkdir staging && mkdir staging\lib && copy target\*.jar staging && copy target\lib\* staging\lib
+    - name: Create target directories
+      run: mkdir staging && mkdir staging\lib
+    - name: Copy file and dependencies
+      run: copy target\*.jar staging && copy target\lib\* staging\lib && copy target\classes\[TF1D].csv staging
     - uses: actions/upload-artifact@v4
       with:
-        name: Package
+        name: JavaMarketTraderPackage
         path: staging
