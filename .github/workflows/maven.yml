@@ -36,10 +36,10 @@ jobs:
       run: mvn -B verify -DskipTests -f pom.xml
     - name: Create target directories
       run: mkdir staging && mkdir staging\lib
-    - name: Copy file and dependencies
-      run: copy target\*.jar staging && copy target\lib\* staging\lib && copy target\classes\[TF1D].csv staging
-    - name: debug get directory list
-      run: dir target\classes
+    - name: Include dependencies in package
+      run: copy target\*.jar staging && copy target\lib\* staging\lib
+    - name: Add mock chart data to package
+      run: copy target\classes\*.csv staging
     - uses: actions/upload-artifact@v4
       with:
         name: JavaMarketTraderPackage
