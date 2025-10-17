@@ -39,7 +39,7 @@ jobs:
     - name: Copy file and dependencies
       run: copy target\*.jar staging && copy target\lib\* staging\lib && copy target\classes\[TF1D].csv staging
     - name: debug get directory list
-      run: dir /s
+      run: dir
     - uses: actions/upload-artifact@v4
       with:
         name: JavaMarketTraderPackage
