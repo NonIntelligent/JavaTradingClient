@@ -8,6 +8,7 @@ import io.fair_acc.sample.financial.service.ConcurrentDateFormatAccess;
 import io.fair_acc.sample.financial.service.SimpleOhlcvDailyParser;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,8 +21,13 @@ public class OhlcvDailyParser {
     private static final ConcurrentDateFormatAccess dateFormatParsing = new ConcurrentDateFormatAccess("MM/dd/yyyy HH:mm");
     private static final ConcurrentDateFormatAccess olderDateFormatParsing = new ConcurrentDateFormatAccess("MM/dd/yyyy HHmm");
 
-    public IOhlcv getContinuousOHLCV(String fileName, String symbol) throws IOException {
-        String path = Thread.currentThread().getContextClassLoader().getResource("").getPath();
+    public IOhlcv getContinuousOHLCV(String fileName, String symbol) throws IOException, URISyntaxException {
+        String path = OhlcvDailyParser.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+        File tempFile = new File(path);
+        if (path.endsWith(".jar")) {
+            tempFile = tempFile.getParentFile();
+        }
+        path = tempFile.getAbsolutePath() + File.separator;
         String resource = String.format("%s%s.csv", path, fileName);
         IOhlcv iterableItems;
         try (

@@ -25,15 +25,20 @@ public class AccountApiStore {
     private final ObjectMapper mapper;
 
     public AccountApiStore(List<Account> accounts) {
-        String filePathTemp = Thread.currentThread().getContextClassLoader().getResource("").getPath()
-                + "accounts.json";
+        String filePathTemp = "";
 
-        log.debug("Cache file location using Thread is {}", filePathTemp);
+        String absolutePath = new File(filePathTemp).getAbsolutePath();
+        log.debug("Empty string path {}", absolutePath);
+
         try {
-            filePathTemp = AccountApiStore.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()
-                    + "accounts.json";
-
-            log.debug("Cache file location using Thread is {}", filePathTemp);
+            filePathTemp = AccountApiStore.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            log.debug("Cache file location using Protection Domain is {}", filePathTemp);
+            File tempFile = new File(filePathTemp);
+            if (filePathTemp.endsWith(".jar")) {
+                tempFile = tempFile.getParentFile();
+            }
+            filePathTemp = tempFile.getAbsolutePath() + File.separator + "accounts.json";
+            log.debug("Cache file location using absolute is {}", filePathTemp);
         } catch (URISyntaxException e) {
             log.error("Error in creating file due to URI issue when getting path.", e);
         }

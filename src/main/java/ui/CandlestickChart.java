@@ -24,6 +24,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import utility.OhlcvDailyParser;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 public class CandlestickChart extends XYChart {
     public CandlestickChart(String fileName, String title, String symbol){
@@ -47,7 +48,7 @@ public class CandlestickChart extends XYChart {
 
         try {
             loadTestData(fileName, symbol, ohlcDataSet, indiSet);
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
 
@@ -68,7 +69,7 @@ public class CandlestickChart extends XYChart {
         getRenderers().addAll(renderer, avgRenderer);
     }
 
-    public void loadTestData(String data, String symbol, OhlcvDataSet dataSet, DefaultDataSet indiSet) throws IOException {
+    public void loadTestData(String data, String symbol, OhlcvDataSet dataSet, DefaultDataSet indiSet) throws IOException, URISyntaxException {
         // what/why is this class
         final long startTime = ProcessingProfiler.getTimeStamp();
 
