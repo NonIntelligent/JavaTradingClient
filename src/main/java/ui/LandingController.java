@@ -4,6 +4,7 @@ import Data.Instrument;
 import Data.Order;
 import Data.Position;
 import broker.Account;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -70,7 +71,11 @@ public class LandingController extends UIController {
 
     @FXML
     private void demoApplication(ActionEvent e) {
-        // TODO clear all table data and lists
+        fx_tickers.getSelectionModel().clearSelection();
+        fx_tickers.getItems().clear();
+        fx_positions.getItems().clear();
+        fx_orders.getItems().clear();
+        fx_accounts.getItems().clear();
         fxLoaderRef.informManagerToSetupDemo();
     }
 
@@ -121,7 +126,7 @@ public class LandingController extends UIController {
             for (int i = 0; i < instruments.length; i++) {
                 Instrument inst = instruments[i];
                 MenuButton tickerButton = createTickerButton(inst);
-                fx_tickers.getItems().add(tickerButton);
+                Platform.runLater(() -> fx_tickers.getItems().add(tickerButton));
             }
         }
         else {
@@ -134,7 +139,7 @@ public class LandingController extends UIController {
         //  content is buy/sell options
         String text = inst.symbol;
         MenuButton ticker = new MenuButton(text);
-        if (inst.name == null) {
+        if (inst == null || inst.name == null) {
             boolean nullable = true;
             log.error("Instrument name is null");
         }

@@ -18,6 +18,11 @@ public final class ApiFactory {
                 api.addHeaderForRequests("APCA-API-SECRET-KEY", key);
                 yield api;
             }
+            case DEMO -> {
+                api = new DemoAPI(domain);
+                api.addHeaderForRequests("Auth", key);
+                yield api;
+            }
             default -> throw new IllegalArgumentException("The API factory does not support the broker " + broker);
         };
     }

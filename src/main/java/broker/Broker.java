@@ -5,7 +5,8 @@ import java.util.Map;
 
 public enum Broker {
     TRADING212("Trading 212", "https://demo.trading212.com", "", "/api/v0/equity"),
-    ALPACA("Alpaca", "https://paper-api.alpaca.markets", "https://api.alpaca.markets", "/v2");
+    ALPACA("Alpaca", "https://paper-api.alpaca.markets", "https://api.alpaca.markets", "/v2"),
+    DEMO("Demo", "https://demo.mockapplication.com", "https://mockapplication.com", "/api");
 
     public final String name;
     public final String demo;

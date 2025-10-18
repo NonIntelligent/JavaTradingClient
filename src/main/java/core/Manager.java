@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.apache.commons.lang3.tuple.Triple;
@@ -31,6 +32,7 @@ public class Manager implements Consumer {
     private ObservableList<Account> accounts;
     private Account activeAccount;
     private final TaskExecutor dataRequester;
+    private boolean demoMode = false;
 
     Manager(EventChannel eventChannel) {
         this.eventChannel = eventChannel;
@@ -185,13 +187,13 @@ public class Manager implements Consumer {
                 //  Or look to instead update account data directly and let UI react using property
                 JsonNode node = mapper.readTree(result.content());
                 BigDecimal cash = new BigDecimal(node.get("cash").asText("0.00"));
-                cash.setScale(2, RoundingMode.UNNECESSARY);
+                cash = cash.setScale(2, RoundingMode.HALF_DOWN);
 
                 BigDecimal total_cash = new BigDecimal(node.get("equity").asText("0.00"));
-                total_cash.setScale(2, RoundingMode.UNNECESSARY);
+                total_cash = total_cash.setScale(2, RoundingMode.HALF_DOWN);
 
                 BigDecimal invested = total_cash.subtract(cash);
-                invested.setScale(2, RoundingMode.UNNECESSARY);
+                invested = invested.setScale(2, RoundingMode.HALF_DOWN);
 
                 activeAccount.freeCash = cash.doubleValue();
                 activeAccount.totalCash = total_cash.doubleValue();
@@ -274,8 +276,23 @@ public class Manager implements Consumer {
     }
 
     public void startDemoMode() {
-        // TODO Create fake account with demo API to return example data
         dataRequester.cancelAllTasks();
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            log.error("Interrupted while waiting for tasks to cancel. No idea why.", e);
+            return;
+        }
+        String apiSecret = "secret";
+        String apiID = "id";
+
+        DemoAPI demo = (DemoAPI) ApiFactory.getApi(Broker.DEMO, AccountType.DEMO, apiSecret, apiID);
+        Account demoAccount = new Account(demo, AccountType.DEMO, apiSecret, apiID);
+        accounts.add(demoAccount);
+        activeAccount = demoAccount;
+
+        demoMode = true;
+        beginProcessing();
     }
 
     @Override
@@ -295,6 +312,7 @@ public class Manager implements Consumer {
             case CREATE_ACCOUNT -> {createAccountFromJSON(event.data());}
             case LATEST_STOCK_QUOTE -> {scheduleStockQuoteRetrieval(event.data());}
             case TASK_CANCEL -> {cancelTask(event.data());}
+            case DEMO_APP -> {startDemoMode();}
         }
     }
 
@@ -322,6 +340,7 @@ public class Manager implements Consumer {
     public void stop() {
         dataRequester.shutdown();
         try {
+            if (demoMode) accounts.remove(activeAccount);
             apiStore.saveAPIsToFile(accounts);
         } catch (IOException e) {
             log.error("Could not save api data to file", e);
