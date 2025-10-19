@@ -198,7 +198,7 @@ public class DemoAPI extends TradingAPI {
             pos.quantity = generateRandomNumberAsString(1, 11);
             pos.currentPrice = BigDecimal.valueOf(generateRandomNumber(1d, 200d)).setScale(2, RoundingMode.HALF_EVEN).toString();
             pos.marketValue = Double.toString(Double.parseDouble(pos.quantity) * Double.parseDouble(pos.currentPrice));
-            pos.avgEntry = BigDecimal.valueOf(generateRandomNumber(1d, Double.parseDouble(pos.currentPrice)))
+            pos.avgEntry = BigDecimal.valueOf(generateRandomNumber(1d, Double.parseDouble(pos.currentPrice) * 1.5d))
                     .setScale(2, RoundingMode.HALF_EVEN)
                     .toString();
 
