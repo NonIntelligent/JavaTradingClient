@@ -12,6 +12,11 @@ public abstract class UIController implements Initializable {
 
     public void loadCSS(Scene scene) {}
 
+    /**
+     * Apply input sanitation to any JavaFX object that accept user text input and is checked per character.
+     * @param textInput JavaFX object to apply input limits to.
+     * @param regex Regex notation that is applied on every new character entered.
+     */
     protected void applyInputSanitation(TextInputControl textInput, String regex) {
         textInput.setTextFormatter(new TextFormatter<String>(change -> {
             String newText = change.getControlNewText();
