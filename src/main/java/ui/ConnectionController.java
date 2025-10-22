@@ -5,14 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
-// Handles UI request for connecting to the API and disconnecting from the session
+/**
+ * Handles UI requests for connecting to the API for the purposes of creating an {@link Account}
+ */
 public class ConnectionController extends UIController {
     @FXML
     ComboBox<String> fx_brokerApiSelection;
@@ -38,6 +39,7 @@ public class ConnectionController extends UIController {
             fx_brokerApiSelection.getItems().add(b.name);
         }
 
+        // Apply input sanitation that only accepts the alphanumeric characters.
         final String regexSanitationKey = "[a-zA-Z0-9]*";
 
         applyInputSanitation(fx_apiKey, regexSanitationKey);

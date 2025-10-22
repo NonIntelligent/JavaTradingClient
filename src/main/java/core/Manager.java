@@ -40,7 +40,7 @@ public class Manager implements Consumer {
         // Only UI needs to retain all the instruments to display
         instruments = new ArrayList<>(100);
         accounts = FXCollections.observableArrayList();
-        apiStore = new AccountApiStore(accounts);
+        apiStore = new AccountApiStore();
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

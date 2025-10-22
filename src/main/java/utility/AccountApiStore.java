@@ -1,6 +1,11 @@
 package utility;
 
-import broker.*;
+import broker.ApiData;
+import broker.Account;
+import broker.AccountType;
+import broker.Broker;
+import broker.TradingAPI;
+import broker.ApiFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.Version;
@@ -18,22 +23,31 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Used to store the api details of the {@link Account} in a json file to load on future use.
+ */
 public class AccountApiStore {
     private static final Logger log = LoggerFactory.getLogger("FileIO");
     private final String apiFilePath;
     private final File apiCache;
     private final ObjectMapper mapper;
 
-    public AccountApiStore(List<Account> accounts) {
+    /**
+     * Creates an accounts.json file in the executable's directory.
+     */
+    public AccountApiStore() {
         String filePathTemp = "";
 
+        // Debug string to check where the absolut path.
         String absolutePath = new File(filePathTemp).getAbsolutePath();
         log.debug("Empty string path {}", absolutePath);
 
+        // Finds the directory containing the executable jar. Different result when executed in IDE vs JAR file.
         try {
             filePathTemp = AccountApiStore.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
             log.debug("Cache file location using Protection Domain is {}", filePathTemp);
             File tempFile = new File(filePathTemp);
+            // Get parent directory if this was run as a jar file.
             if (filePathTemp.endsWith(".jar")) {
                 tempFile = tempFile.getParentFile();
             }
@@ -43,13 +57,13 @@ public class AccountApiStore {
             log.error("Error in creating file due to URI issue when getting path.", e);
         }
 
+        // Create file at correct directory location.
         apiFilePath = filePathTemp;
-
         apiCache = new File(apiFilePath);
         log.debug("Cache file will be located at {}", apiFilePath);
 
+        // Create and register custom serialize modules for ApiData.
         mapper = new ObjectMapper();
-        // Create and register custom serialize modules
         SimpleModule serializerModule = new SimpleModule("ApiDataSerializer",
                 new Version(1, 0, 0, null, null, null));
         serializerModule.addSerializer(new ApiDataSerializer(ApiData.class));
@@ -66,7 +80,11 @@ public class AccountApiStore {
 
     }
 
-    // Save APIData class into a JSON file
+    /**
+     * Save the API information for each account into a json file. Stores api keys, broker and the account type.
+     * @param accounts The list of accounts' API data to store.
+     * @throws IOException If an I/O error occurred when creating a new file or writing to it.
+     */
     public void saveAPIsToFile(List<Account> accounts) throws IOException {
         if (!apiCache.exists()){
             boolean created = apiCache.createNewFile();
@@ -80,17 +98,23 @@ public class AccountApiStore {
 
         // TODO maybe add id to avoid duplicate accounts
 
-        // Iterate through each account and store APIData to list
+        // Retrieve ApiData from the account and write to the file.
         List<ApiData> apiDataList = new ArrayList<>(accounts.size());
         // TODO Encrypt api key using the client's password as key
         for (Account acc : accounts){
             apiDataList.add(acc.getApiData());
         }
         log.info("Saving account data to file");
-        // Write data to file
         mapper.writeValue(apiCache, apiDataList);
     }
 
+
+    /**
+     * Read in the {@link ApiData} from the json file.
+     * @param password Used to decrypt the data. Was set by the user on first file save.
+     * @return The list of {@code ApiData}.
+     * @throws IOException If an I/O error occurred when reading from the file.
+     */
     public List<ApiData> loadStoredAPIs(String password) throws IOException {
         List<ApiData> storedAPIs = new ArrayList<>();
 
@@ -117,7 +141,6 @@ public class AccountApiStore {
 
     public void removeEntryFromAPIFile() {}
 
-    // Deletes the JSON file containing the API information
     public void removeAllAccounts(){}
 
     public boolean checkCacheExists() {
@@ -134,6 +157,7 @@ public class AccountApiStore {
                               SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeStartObject();
             // TODO encrypt API key here
+            // Write all of the fields to be saved in the file.
             jsonGenerator.writeStringField("broker", apiData.tradingAPI().broker.name());
             jsonGenerator.writeStringField("type", apiData.type().name());
             jsonGenerator.writeStringField("key", apiData.key());

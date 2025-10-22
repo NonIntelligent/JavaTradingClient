@@ -5,7 +5,6 @@ import broker.OrderType;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -22,8 +21,10 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.concurrent.Future;
 
+/**
+ * Handles the view and functionality of the order menu to place market orders.
+ */
 public class OrderController extends UIController {
     private final Stage stage;
     private final BorderPane rootNode;
@@ -33,11 +34,19 @@ public class OrderController extends UIController {
     private Text buyPrice;
     private Text sellPrice;
 
+    /**
+     * Build the window and all components of the menu.
+     * Make sure to call {@link #setUserDataStage(Object)} after and supply the {@code Future}
+     * that executes the {@link #updatePriceData(Quote)} repeated task so that it can be cancelled later.
+     * @param fxLoader A reference to the class that's managing this controller and to propagate events to.
+     */
     public OrderController(FXLoading fxLoader) {
         super(fxLoader);
+        // Build all container and logical components for the menu
         stage = new Stage();
         rootNode = buildMenuLayout();
 
+        // Assign to the scene and set up the window to cancel the API request for price data on close.
         Scene orderScene = new Scene(rootNode, 600, 400);
         stage.setScene(orderScene);
         stage.setTitle("Create an Order");
@@ -148,12 +157,20 @@ public class OrderController extends UIController {
         return hbox;
     }
 
+    /**
+     * Change the text with the supplied string.
+     * @param symbol The symbol characters of the stock.
+     */
     public void updateTitleName(String symbol) {
         Text title = (Text) rootNode.getTop();
         title.setText("Stock: " + symbol);
         title.setUserData(symbol);
     }
 
+    /**
+     * Update the displayed buy and sell prices of the stock.
+     * @param quote Object containing the bid/ask price.
+     */
     public void updatePriceData(Quote quote) {
         buyPrice.setText("Buy Price: " + quote.askPrice);
         buyPrice.setUserData(quote.askPrice);
@@ -161,6 +178,10 @@ public class OrderController extends UIController {
         sellPrice.setUserData(quote.bidPrice);
     }
 
+    /**
+     * Calls the {@link FXLoading#postBuyOrder(String, String, OrderType)} method to send a buy event.
+     * @param event The event that caused this function to be called.
+     */
     public void sendBuyOrder(ActionEvent event) {
         String symbol = (String) title.getUserData();
         String quantity = volumeInput.getText();
@@ -175,6 +196,10 @@ public class OrderController extends UIController {
         fxLoaderRef.postBuyOrder(symbol, quantity, type);
     }
 
+    /**
+     * Calls the {@link FXLoading#postSellOrder(String, String, OrderType)} method to send a sell event.
+     * @param event The event that caused this function to be called.
+     */
     public void sendSellOrder(ActionEvent event) {
         String symbol = (String) title.getUserData();
         String quantity = volumeInput.getText();
@@ -186,15 +211,25 @@ public class OrderController extends UIController {
         fxLoaderRef.postSellOrder(symbol, quantity, type);
     }
 
+    /**
+     * Puts the menu in focus and presents it to the user.
+     */
     public void showMenu() {
         stage.requestFocus();
         stage.show();
     }
 
+    /**
+     * @return If the Order window is visible and in front of other windows.
+     */
     public boolean isVisible() {
         return stage.isShowing();
     }
 
+    /**
+     * Assigns the object to the {@code stage} for later retrieval.
+     * @param obj Object to store.
+     */
     public void setUserDataStage(Object obj) {
         stage.setUserData(obj);
     }

@@ -1,6 +1,5 @@
 package ui;
 
-import io.fair_acc.chartfx.Chart;
 import io.fair_acc.chartfx.XYChart;
 import io.fair_acc.chartfx.axes.AxisMode;
 import io.fair_acc.chartfx.axes.spi.DefaultNumericAxis;
@@ -12,14 +11,11 @@ import io.fair_acc.chartfx.renderer.spi.ErrorDataSetRenderer;
 import io.fair_acc.chartfx.renderer.spi.financial.CandleStickRenderer;
 import io.fair_acc.chartfx.renderer.spi.financial.FinancialTheme;
 import io.fair_acc.chartfx.ui.geometry.Side;
-import io.fair_acc.dataset.DataSet;
 import io.fair_acc.dataset.spi.DefaultDataSet;
 import io.fair_acc.dataset.spi.financial.OhlcvDataSet;
 import io.fair_acc.dataset.spi.financial.api.ohlcv.IOhlcv;
 import io.fair_acc.dataset.spi.financial.api.ohlcv.IOhlcvItem;
 import io.fair_acc.dataset.utils.ProcessingProfiler;
-import io.fair_acc.sample.financial.dos.DefaultOHLCV;
-import io.fair_acc.sample.financial.service.SimpleOhlcvDailyParser;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import utility.OhlcvDailyParser;
 

@@ -9,7 +9,6 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
@@ -22,6 +21,10 @@ import org.slf4j.LoggerFactory;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+
+/**
+ * Handles the main window and the majority of components on screen. Reliant on the FXML file for the components.
+ */
 public class LandingController extends UIController {
     private static final Logger log = LoggerFactory.getLogger("ui");
     @FXML private MenuBar fx_titleMenu;
@@ -32,14 +35,11 @@ public class LandingController extends UIController {
     @FXML private TabPane fx_chartsTabPane;
     private Stage mainStage;
 
+    /**
+     * @param fxLoader A reference to the class that's managing this controller and to propagate events to.
+     */
     public LandingController(FXLoading fxLoader) {
         super(fxLoader);
-    }
-
-    @Override
-    public void loadCSS(Scene scene) {
-        var styles = scene.getStylesheets();
-        //styles.add(getClass().getResource("/debug.css").toExternalForm());
     }
 
     @Override
@@ -167,11 +167,19 @@ public class LandingController extends UIController {
         return ticker;
     }
 
+    /**
+     * Creates the Order menu window and provides the symbol name.
+     * @param ticker The symbol name to provide for the menu.
+     */
     public void openOrderMenu(MenuButton ticker) {
         log.info("Creating order menu");
         fxLoaderRef.createOrderMenu((Instrument) ticker.getUserData());
     }
 
+    /**
+     * Clear and update the table list of orders.
+     * @param orders The list of orders to display.
+     */
     public void updateOrders(Order[] orders) {
         var list = fx_orders.getItems();
         list.clear();
@@ -186,6 +194,10 @@ public class LandingController extends UIController {
 
     }
 
+    /**
+     * Clear and update the table list of orders.
+     * @param positions the list of positions to display.
+     */
     public void updatePositions(Position[] positions) {
         var list = fx_positions.getItems();
         list.clear();
@@ -196,10 +208,18 @@ public class LandingController extends UIController {
         }
     }
 
+    /**
+     * Display the list of current accounts.
+     * @param accounts List of loaded/created accounts.
+     */
     public void setAccountTableData(ObservableList<Account> accounts) {
         fx_accounts.setItems(accounts);
     }
 
+    /**
+     * Opens an example chart using a spreadsheet.
+     * @param ticker The symbol of the stock.
+     */
     public void openChart(String ticker) {
         // create chart and wait for data to be updated
         log.debug("Opening chart");
@@ -212,7 +232,9 @@ public class LandingController extends UIController {
         fx_chartsTabPane.getTabs().add(tab);
     }
 
-    // Refresh all visible cells in every table.
+    /**
+     * Refresh all visible cells in every table to update their values.
+     */
     public void refreshAllTables() {
         fx_accounts.refresh();
         fx_tickers.refresh();
