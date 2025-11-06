@@ -1,12 +1,13 @@
 # The Project
 
-A market trading app to perform algorithmic trading.
-Connect to your trading API and perform any type of market trade manually or with the client acting as a bot, applying set strategies.
-View charts, order history and account value statistics.
+A market trading app to execute trades via market orders.
+Connect to your trading API and perform market trades, view charts, order history, current positions, and current cash value.
 
 # Technologies
-Built using Maven to streamline testing and manage dependencies.
+Built using Maven as the build automation tool to streamline testing and manage dependencies.
 
 - *JavaFX*: Easy to design and develop the UI
+- *JUnit5*: Testing framework to reduce coding mistakes and minimise bugs on release.
 - *JacksonDatabind*: Parse the JSON data from the APIs
-- *Log4J*: Popular logging tool to gather runtime information
+- *SLF4J (LOG4J2)*: Popular logging tool to gather runtime information behind an abstraction framework.
+- *ChartFX*: Library extension for JavaFX charts that includes support for Financial charts.
