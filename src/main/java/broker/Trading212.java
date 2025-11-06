@@ -1,9 +1,7 @@
 package broker;
 
 import Data.Result;
-import core.ApiHandler;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
@@ -66,6 +64,7 @@ public class Trading212 extends TradingAPI {
     public Result placeMarketOrder(String ticker, String quantity, OrderType orderType, boolean isBuy) {
         final String requestURI = baseURI + "/orders/market";
 
+        // Create market order of 0.1 quantity.
         String stringQuantity = String.format(" \"quantity\": %.1f,", quantity);
         String stringTicker = String.format(" \"ticker\": \"%s\"", ticker);
 

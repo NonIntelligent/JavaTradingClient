@@ -5,11 +5,13 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import utility.DeserializeWrap;
 
 import java.io.IOException;
 
+/**
+ * A JSON serialized data structure that stores price and meta information about a given position.
+ */
 @JsonDeserialize(using = PositionDeserializer.class)
 public class Position {
     public String symbol;

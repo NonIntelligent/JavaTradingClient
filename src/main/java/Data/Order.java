@@ -8,11 +8,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import utility.DeserializeWrap;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 
+/**
+ * A JSON serialized data structure that stores the details of a given market order.
+ */
 @JsonDeserialize(using = OrderDeserializer.class)
 public class Order {
     public String creationTime;

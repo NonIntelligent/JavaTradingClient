@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.apache.commons.lang3.tuple.Triple;
@@ -23,6 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
+/**
+ * Manages the core systems, task scheduling and account handling.
+ * Also is subscribed to events from the UI component and passes information through,
+ * acting as a Model in an MVVM design pattern.
+ */
 public class Manager implements Consumer {
     private static final Logger log = LoggerFactory.getLogger("application");
     private final EventChannel eventChannel;

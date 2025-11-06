@@ -3,6 +3,10 @@ package broker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The user account that is linked to a specified Trading API.
+ * Store and keep track of api data, cash, and other metadata.
+ */
 public class Account {
     private static final Logger log = LoggerFactory.getLogger(Account.class);
 

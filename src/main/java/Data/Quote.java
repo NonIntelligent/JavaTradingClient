@@ -9,6 +9,9 @@ import utility.DeserializeWrap;
 
 import java.io.IOException;
 
+/**
+ * A JSON serialized data structure that stores the bid/ask price.
+ */
 @JsonDeserialize(using = QuoteDeserializer.class)
 public class Quote {
     public String bidPrice;

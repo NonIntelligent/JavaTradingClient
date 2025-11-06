@@ -16,6 +16,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * A static class that executes all API requests using a {@code HTTPClient} and returns the HTTP result.
+ */
 public final class ApiHandler {
     private static final Logger log = LoggerFactory.getLogger("api");
     private static final CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -25,6 +28,13 @@ public final class ApiHandler {
     private ApiHandler() {
     }
 
+    /**
+     * Sends an HTTP GET request to the target API location as specified by the headers.
+     * @param request The URL resource location to GET data from.
+     * @param headers The HTTP headers for authentication.
+     * @return The HTTP response as an object.
+     * @throws IOException When the request could not be executed.
+     */
     public static Result executeApiGetRequest(String request, ArrayList<Header> headers) throws IOException {
         HttpGet httpGet = new HttpGet(request);
 
@@ -40,6 +50,13 @@ public final class ApiHandler {
         return result;
     }
 
+    /**
+     * @param request The URL resource location to GET data from.
+     * @param payload The data to send to the server to change data.
+     * @param headers The HTTP headers for authentication.
+     * @return The HTTP response as an object.
+     * @throws IOException When the request could not be executed.
+     */
     public static Result executeApiPostRequest(String request, String payload, ArrayList<Header> headers) throws IOException {
         HttpPost httpPost = new HttpPost(request);
 
@@ -61,6 +78,9 @@ public final class ApiHandler {
         return result;
     }
 
+    /**
+     * Closes the HTTP Client.
+     */
     public static void terminate() {
         try {
             log.info("Terminating httpClient");

@@ -1,12 +1,14 @@
 package core;
 
-import com.sun.javafx.runtime.VersionInfo;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ui.FXLoading;
 
+/**
+ * The JavaFX application class to handle the setup, startup, and shutdown processes.
+ */
 public class App extends Application {
     private static final Logger log = LoggerFactory.getLogger("application");
     private Manager manager;

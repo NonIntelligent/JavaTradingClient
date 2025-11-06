@@ -1,5 +1,8 @@
 package core;
 
+/**
+ * The type events the application supports to communicate between systems.
+ */
 public enum AppEventType {
     // Broker and API related events
     ALL_INSTRUMENTS, INSTRUMENT,

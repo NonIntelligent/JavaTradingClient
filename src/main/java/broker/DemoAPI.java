@@ -15,6 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Class used to demo the application by acting as a mock API server.
+ * Returns randomly generated data based on API requests.
+ */
 public class DemoAPI extends TradingAPI {
     private final ObjectMapper demoMapper;
     private List<Instrument> mockInstruments;
@@ -36,6 +40,7 @@ public class DemoAPI extends TradingAPI {
         mockQuotes = new ArrayList<>();
         mockInstruments = new ArrayList<>();
 
+        // Fake account to assist in storing cash and metadata.
         cashAndMeta = new Account(null, null, null, null);
 
         // Setup default randomised data

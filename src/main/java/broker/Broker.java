@@ -3,6 +3,9 @@ package broker;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Each supported broker is defined here, including the URL entries for their API domain.
+ */
 public enum Broker {
     TRADING212("Trading 212", "https://demo.trading212.com", "", "/api/v0/equity"),
     ALPACA("Alpaca", "https://paper-api.alpaca.markets", "https://api.alpaca.markets", "/v2"),

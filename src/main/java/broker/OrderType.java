@@ -3,6 +3,9 @@ package broker;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Different ways to execute an Order for trades.
+ */
 public enum OrderType {
     MARKET("Market Order"),
     LIMIT("Limit Order"),
@@ -29,6 +32,11 @@ public enum OrderType {
         return prettyName;
     }
 
+    /**
+     * Find an OrderType from the given String.
+     * @param prettyName The {@link #toString()} value of an {@code OrderType}.
+     * @return The order execution type otherwise {@code null}.
+     */
     public static OrderType fromString(String prettyName) {
         if (prettyName == null) {
             throw new IllegalArgumentException("Provided String is null");
