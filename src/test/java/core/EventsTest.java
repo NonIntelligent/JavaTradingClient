@@ -1,11 +1,13 @@
 package core;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import ui.FXLoading;
-import utility.Consumer;
+import utility.EventConsumer;
 
 import java.lang.reflect.Field;
 import java.util.EnumSet;
@@ -13,6 +15,7 @@ import java.util.HashMap;
 
 
 public class EventsTest {
+    private static App sharedApp;
 
     public Field getPrivateField(Class<?> javaClass, String fieldName) throws NoSuchFieldException {
         Field field = javaClass.getDeclaredField(fieldName);
@@ -20,20 +23,25 @@ public class EventsTest {
         return field;
     }
 
+    @BeforeAll
+    static void AppSetup() {
+        sharedApp = new App();
+    }
+
     /**
      * Checks if every class that implement the Consumer interface
      * have been connected to the EventChannel after App creation.
      */
+    private static final int NO_OF_CONSUMERS = 2;
     @Test
     void are_all_consumers_connected() {
         try {
             Field channelField = getPrivateField(App.class, "eventChannel");
             Field consumerMap = getPrivateField(EventChannel.class, "consumers");
-            App app = new App();
-            EventChannel eventChannel = (EventChannel)channelField.get(app);
-            var consumers = (HashMap<Consumer, EnumSet<AppEventType>>) consumerMap.get(eventChannel);
+            EventChannel eventChannel = (EventChannel)channelField.get(sharedApp);
+            var consumers = (HashMap<EventConsumer, EnumSet<AppEventType>>) consumerMap.get(eventChannel);
 
-            assertEquals(2, consumers.size(),
+            assertEquals(NO_OF_CONSUMERS, consumers.size(),
                     "All in-use consumers have been connected to the event channel");
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -51,13 +59,11 @@ public class EventsTest {
         try {
             Field managerField = getPrivateField(App.class, "manager");
             Field fxLoadingField = getPrivateField(App.class, "fxLoading");
-            App app = new App();
-            Manager manager = (Manager) managerField.get(app);
-            FXLoading fxLoading = (FXLoading) fxLoadingField.get(app);
+            Manager manager = (Manager) managerField.get(sharedApp);
+            FXLoading fxLoading = (FXLoading) fxLoadingField.get(sharedApp);
 
             manager.processEvent(new AppEvent(null, type, manager));
             fxLoading.processEvent(new AppEvent(null, type, fxLoading));
-            // Get all class implementations of Consumer and check if they are present in this list
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }

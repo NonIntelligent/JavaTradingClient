@@ -16,7 +16,7 @@ import javafx.stage.Stage;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import utility.Consumer;
+import utility.EventConsumer;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
  * Controls the loading of the FXML controller classes and handles communication between
  * them and the {@code Manager}. Also, can receive events from the event bus.
  */
-public class FXLoading implements Consumer {
+public class FXLoading implements EventConsumer {
     private static final Logger log = LoggerFactory.getLogger("ui");
     private final EventChannel eventChannel;
     private Stage mainWindow = null;
@@ -134,9 +134,7 @@ public class FXLoading implements Consumer {
 
     @Override
     public void processEvent(AppEvent event) {
-        final AppEventType[] nullableEvents = {AppEventType.REFRESH_TABLES};
-
-        if (event.data() == null && event.type() != AppEventType.REFRESH_TABLES) {
+        if (event.data() == null) {
             log.debug("AppEvent data is NULL of type {}", event.type());
             return;
         }

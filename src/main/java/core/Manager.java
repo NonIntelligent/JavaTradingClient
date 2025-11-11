@@ -12,7 +12,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utility.AccountApiStore;
-import utility.Consumer;
+import utility.EventConsumer;
 import utility.TaskExecutor;
 
 import java.io.IOException;
@@ -27,7 +27,7 @@ import java.util.concurrent.Future;
  * Also is subscribed to events from the UI component and passes information through,
  * acting as a Model in an MVVM design pattern.
  */
-public class Manager implements Consumer {
+public class Manager implements EventConsumer {
     private static final Logger log = LoggerFactory.getLogger("application");
     private final EventChannel eventChannel;
     private AccountApiStore apiStore;
@@ -202,7 +202,7 @@ public class Manager implements Consumer {
                 activeAccount.freeCash = cash.doubleValue();
                 activeAccount.totalCash = total_cash.doubleValue();
                 activeAccount.investedCash = invested.doubleValue();
-                eventChannel.publish(null, AppEventType.REFRESH_TABLES, this);
+                eventChannel.publish(AppEventType.REFRESH_TABLES, this);
             } catch (JsonProcessingException e) {
                 log.error("JSON parsing failed to read result contents", e);
             } catch (InterruptedException e) {
@@ -226,7 +226,7 @@ public class Manager implements Consumer {
                 String currency = node.get("currency").asText("???");
                 activeAccount.accountID = accountID;
                 activeAccount.currencyCode = currency;
-                eventChannel.publish(null, AppEventType.REFRESH_TABLES, this);
+                eventChannel.publish(AppEventType.REFRESH_TABLES, this);
             } catch (JsonProcessingException e) {
                 log.error("JSON parsing failed to read result contents", e);
             } catch (InterruptedException e) {
@@ -301,10 +301,6 @@ public class Manager implements Consumer {
 
     @Override
     public void processEvent(AppEvent event) {
-        switch (event.type()) {
-            case DEMO_APP -> {startDemoMode();}
-        }
-
         if (event.data() == null) {
             log.error("AppEvent data is NULL of type {}", event.type());
             return;

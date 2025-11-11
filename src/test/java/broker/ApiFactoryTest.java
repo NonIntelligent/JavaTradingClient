@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ApiFactoryTest {
     /**
      * Tests all Broker enums to see if they are constructable by the factory.
-     * This does mean the class needs to be fully feature implemented.
+     * This does not require the extended API class to implement overrides.
      */
     @Test
     void are_all_apis_constructable() {
