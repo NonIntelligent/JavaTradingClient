@@ -28,39 +28,17 @@ import java.util.List;
  */
 public class AccountApiStore {
     private static final Logger log = LoggerFactory.getLogger("FileIO");
-    private final String apiFilePath;
-    private final File apiCache;
     private final ObjectMapper mapper;
+    private String fileName;
+    private File apiCache;
 
     /**
-     * Creates an accounts.json file in the executable's directory.
+     * Setup serialization and deserialization of the class {@link ApiData}.
      */
     public AccountApiStore() {
-        String filePathTemp = "";
-
-        // Debug string to check where the absolut path.
-        String absolutePath = new File(filePathTemp).getAbsolutePath();
-        log.debug("Empty string path {}", absolutePath);
-
-        // Finds the directory containing the executable jar. Different result when executed in IDE vs JAR file.
-        try {
-            filePathTemp = AccountApiStore.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-            log.debug("Cache file location using Protection Domain is {}", filePathTemp);
-            File tempFile = new File(filePathTemp);
-            // Get parent directory if this was run as a jar file.
-            if (filePathTemp.endsWith(".jar")) {
-                tempFile = tempFile.getParentFile();
-            }
-            filePathTemp = tempFile.getAbsolutePath() + File.separator + "accounts.json";
-            log.debug("Cache file location using absolute is {}", filePathTemp);
-        } catch (URISyntaxException e) {
-            log.error("Error in creating file due to URI issue when getting path.", e);
-        }
-
-        // Create file at correct directory location.
-        apiFilePath = filePathTemp;
-        apiCache = new File(apiFilePath);
-        log.debug("Cache file will be located at {}", apiFilePath);
+        // Default values
+        fileName = "";
+        apiCache = new File(fileName);
 
         // Create and register custom serialize modules for ApiData.
         mapper = new ObjectMapper();
@@ -77,7 +55,55 @@ public class AccountApiStore {
 
         // Configure features of the mapper
         mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
+    }
 
+    /**
+     * Locates the directory containing the Jar executable.
+     */
+    public File findExecutableDirectory() {
+        String filePath = "";
+        // Finds the directory containing the executable jar. Different result when executed in IDE vs JAR file.
+        try {
+            filePath = AccountApiStore.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            log.debug("Cache file location using Protection Domain is {}", filePath);
+        } catch (URISyntaxException e) {
+            log.error("Error in creating file due to URI issue when getting path.", e);
+        }
+
+        // Refer to the directory containing the jar if program was run as an executable.
+        File parentFile = new File(filePath).getParentFile();
+        if (filePath.endsWith(".jar")) {
+            filePath = parentFile.getPath();
+        }
+
+        return new File(filePath);
+    }
+
+    /**
+     * Creates the cache file on the system.
+     * @param directory The location to store the file without separator at end.
+     * @param fileName The name of the file.
+     * @return If the file exists after creation attempt.
+     */
+    public boolean createCacheFile(File directory, String fileName) {
+        // Append JSON format to filename if it's not included.
+        this.fileName = fileName != null && fileName.endsWith(".json") ? fileName : fileName + ".json";
+
+        // Create file at correct directory location.
+        String apiFilePath = directory.getPath() + File.separator + this.fileName;
+        apiCache = new File(apiFilePath);
+        log.debug("Cache file will be located at {}", apiFilePath);
+
+        try {
+            if (!apiCache.exists()) {
+                apiCache.createNewFile();
+                log.info("Creating new API cache file {}.", this.fileName);
+            }
+        } catch (IOException e) {
+            log.error("Failed to create the cache file.", e);
+        }
+
+        return apiCache.exists();
     }
 
     /**
@@ -86,13 +112,13 @@ public class AccountApiStore {
      * @throws IOException If an I/O error occurred when creating a new file or writing to it.
      */
     public void saveAPIsToFile(List<Account> accounts) throws IOException {
-        if (!apiCache.exists()){
-            boolean created = apiCache.createNewFile();
-            log.info("Creating new API cache file (accounts.json).");
+        if (!doesCacheExist()) {
+            log.info("Skipping save process. File was not created beforehand");
+            return;
         }
 
         if (accounts.isEmpty()) {
-            log.info("Skipping save process. No accounts were loaded.");
+            log.info("Skipping save process. No accounts were connected.");
             return;
         }
 
@@ -118,12 +144,18 @@ public class AccountApiStore {
     public List<ApiData> loadStoredAPIs(String password) throws IOException {
         List<ApiData> storedAPIs = new ArrayList<>();
 
+        // Skip encryption with no password.
+        if (password == null || password.isBlank()) {
+
+        }
+
         // TODO notes for encryption implementation
         //  ask for password on start-up if a JSON file exists and decrypt keys/create accounts
         //  do a small metadata api call to see if password/key is correct
         //  When saving, ask for password and check result against existing result in file
 
-        if (!apiCache.exists()) return storedAPIs;
+        // Check if the cache contains data.
+        if (!doesCacheExist() || apiCache.length() == 0) return storedAPIs;
         // Read each entry and decrypt api keys with custom deserializer
         List<ApiData> badEntries = new ArrayList<>();
         log.info("Reading from api cache file");
@@ -141,11 +173,19 @@ public class AccountApiStore {
 
     public void removeEntryFromAPIFile() {}
 
-    public void removeAllAccounts(){}
+    public boolean deleteCache() {
+        if (!apiCache.exists()) return false;
 
-    public boolean checkCacheExists() {
-        return apiCache.exists();
+        return apiCache.delete();
     }
+
+    public boolean doesCacheExist() {
+        return apiCache != null && apiCache.exists();
+    }
+
+    public String getFileName() { return fileName; }
+
+    public String getApiCachePath() { return apiCache.getPath(); }
 
     class ApiDataSerializer extends StdSerializer<ApiData> {
         public ApiDataSerializer(Class<ApiData> classObj) {

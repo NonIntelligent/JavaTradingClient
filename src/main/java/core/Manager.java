@@ -45,6 +45,7 @@ public class Manager implements EventConsumer {
         instruments = new ArrayList<>(100);
         accounts = FXCollections.observableArrayList();
         apiStore = new AccountApiStore();
+        apiStore.createCacheFile(apiStore.findExecutableDirectory(), "accounts.json");
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
