@@ -26,8 +26,9 @@ public class CandlestickChart extends XYChart {
     public CandlestickChart(String fileName, String title, String symbol){
         super();
         setTitle(title);
-        DefaultNumericAxis xa = new DefaultNumericAxis("Time", "d");
+        DefaultNumericAxis xa = new DefaultNumericAxis("Time", "Day");
         DefaultNumericAxis ya = new DefaultNumericAxis("Price", "USD");
+        xa.setTimeAxis(true);
         ya.setSide(Side.LEFT);
 
         getAxes().clear();
@@ -35,7 +36,7 @@ public class CandlestickChart extends XYChart {
         getAxes().add(ya);
 
         FinancialTheme.Classic.applyPseudoClasses(this);
-        getPlugins().add(new Zoomer(AxisMode.X));
+        getPlugins().add(new Zoomer());
         getPlugins().add(new EditAxis());
         getPlugins().add(new DataPointTooltip());
 
