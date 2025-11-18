@@ -17,8 +17,12 @@ jobs:
         java-version: '21'
         architecture: x64
         cache: maven
-    - name: Build and test application
-      run: mvn -B package -f pom.xml
+    - name: Test application
+      run: mvn -B test -f pom.xml
+    - name: Provide coverage report to CodeCov
+      uses: codecov/codecov-action@v5
+      with: 
+        token: ${{ secrets.CODECOV_TOKEN }}
 
   publish-job:
     runs-on: windows-latest
