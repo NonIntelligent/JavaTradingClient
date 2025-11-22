@@ -1,8 +1,10 @@
 package utility;
 
 import broker.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -16,16 +18,23 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ApiCacheTest {
     private final String s = File.separator;
+    private static AccountApiStore apiCache;
+    private static File location;
+
+    @BeforeAll
+    public static void setup() {
+        apiCache = new AccountApiStore();
+        location = apiCache.findExecutableDirectory();
+    }
 
     /**
      * Is the location of the executable directory correct in a test environment?
      */
     @Test
-    void isExecutableDirectoryCorrect() {
+    void is_executable_directory_correct() {
         String workingDirectory = Paths.get("").toAbsolutePath() + s;
         String testClassLocation = workingDirectory + "target" + s + "classes";
 
-        AccountApiStore apiCache = new AccountApiStore();
         // Location is different during testing.
         String result = apiCache.findExecutableDirectory().getPath().toString();
 
@@ -42,10 +51,7 @@ class ApiCacheTest {
     @ParameterizedTest
     @NullSource
     @ValueSource(strings = {"", "nameTest.so", "cacheExists.json"})
-    void checkCacheExistsAfterCreation(String input) {
-        AccountApiStore apiCache = new AccountApiStore();
-        File location = apiCache.findExecutableDirectory();
-
+    void check_cache_exists_after_creation(String input) {
         // Cache was a new creation and did not already exist.
         boolean cache = apiCache.createCacheFile(location, input);
         assertTrue(cache);
@@ -59,14 +65,12 @@ class ApiCacheTest {
      * Save a set of accounts to a file to check if writing was successful.
      */
     @Test
-    void saveAPIsToFile() {
+    void is_apiData_saved_to_file() {
         ArrayList<Account> accounts = new ArrayList<>(3);
         accounts.add(createAccount(Broker.ALPACA, AccountType.DEMO, 1));
         accounts.add(createAccount(Broker.ALPACA, AccountType.LIVE, 2));
         accounts.add(createAccount(Broker.DEMO, AccountType.DEMO, 3));
 
-        AccountApiStore apiCache = new AccountApiStore();
-        File location = apiCache.findExecutableDirectory();
         boolean cache = apiCache.createCacheFile(location, "saveAPI.json");
 
         // Null exception means success.
@@ -81,20 +85,44 @@ class ApiCacheTest {
         }
     }
 
+    @Test
+    void skip_saving_when_there_is_no_cache() {
+        ArrayList<Account> accounts = new ArrayList<>(1);
+        accounts.add(createAccount(Broker.ALPACA, AccountType.DEMO, 1));
+
+        boolean saved = true;
+        try {
+            saved = apiCache.saveAPIsToFile(accounts);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        assertFalse(saved);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void skip_saving_with_no_accounts(ArrayList<Account> accounts) {
+        boolean saved;
+        try {
+            saved = apiCache.saveAPIsToFile(accounts);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        assertFalse(saved);
+    }
+
     /**
      * Check if the data stored is read correctly.
      */
     @Test
-    void loadStoredAPIs() {
+    void are_apis_correctly_loaded() {
         ArrayList<Account> accounts = new ArrayList<>(3);
         accounts.add(createAccount(Broker.ALPACA, AccountType.DEMO, 1));
         accounts.add(createAccount(Broker.ALPACA, AccountType.LIVE, 2));
         accounts.add(createAccount(Broker.DEMO, AccountType.DEMO, 3));
 
-        ArrayList<Account> loaded = new ArrayList<>(3);
-
-        AccountApiStore apiCache = new AccountApiStore();
-        File location = apiCache.findExecutableDirectory();
         boolean cache = apiCache.createCacheFile(location, "loadAPI.json");
         List<ApiData> apiData;
 
@@ -117,9 +145,9 @@ class ApiCacheTest {
             if (data.type() != acc.accountType) correct = false;
             if (!data.key().equals(acc.apiKey)) correct = false;
             if (!data.keyID().equals(acc.apiKeyID)) correct = false;
-            assertTrue(correct);
         }
 
+        assertTrue(correct);
     }
 
     private Account createAccount(Broker broker, AccountType type, int num) {

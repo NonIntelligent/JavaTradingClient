@@ -111,15 +111,15 @@ public class AccountApiStore {
      * @param accounts The list of accounts' API data to store.
      * @throws IOException If an I/O error occurred when creating a new file or writing to it.
      */
-    public void saveAPIsToFile(List<Account> accounts) throws IOException {
+    public boolean saveAPIsToFile(List<Account> accounts) throws IOException {
         if (!doesCacheExist()) {
             log.info("Skipping save process. File was not created beforehand");
-            return;
+            return false;
         }
 
         if (accounts.isEmpty()) {
             log.info("Skipping save process. No accounts were connected.");
-            return;
+            return false;
         }
 
         // TODO maybe add id to avoid duplicate accounts
@@ -132,6 +132,7 @@ public class AccountApiStore {
         }
         log.info("Saving account data to file");
         mapper.writeValue(apiCache, apiDataList);
+        return true;
     }
 
 

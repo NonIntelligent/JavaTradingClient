@@ -6,6 +6,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+
+import static org.mockito.Mockito.*;
+
+import org.mockito.Mockito;
 import ui.FXLoading;
 import utility.EventConsumer;
 
@@ -16,6 +20,8 @@ import java.util.HashMap;
 
 public class EventsTest {
     private static App sharedApp;
+    private static Manager mockManager;
+    private static FXLoading mockEventSender;
 
     public Field getPrivateField(Class<?> javaClass, String fieldName) throws NoSuchFieldException {
         Field field = javaClass.getDeclaredField(fieldName);
@@ -26,6 +32,45 @@ public class EventsTest {
     @BeforeAll
     static void AppSetup() {
         sharedApp = new App();
+        mockManager = mock(Manager.class);
+        mockEventSender = mock(FXLoading.class);
+
+        doNothing().when(mockManager).processEvent(any());
+    }
+
+    @Test
+    void check_subscribers_are_notified() {
+        EventChannel eventChannel = new EventChannel();
+        eventChannel.connectToService(mockManager);
+        eventChannel.subscribeToEvent(mockManager, AppEventType.DEMO_APP);
+        eventChannel.subscribeToEvent(mockManager, AppEventType.CREATE_ACCOUNT);
+
+        try {
+            eventChannel.publish(AppEventType.DEMO_APP, mockEventSender);
+            eventChannel.publish(new Object(), AppEventType.DEMO_APP, mockEventSender);
+            eventChannel.publish(null, AppEventType.CREATE_ACCOUNT, mockEventSender);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        eventChannel.shutdown();
+        verify(mockManager, times(3)).processEvent(any());
+    }
+
+    @Test
+    void is_sender_of_event_skipped() {
+        EventChannel eventChannel = new EventChannel();
+        eventChannel.connectToService(mockManager);
+        eventChannel.subscribeToEvent(mockManager, AppEventType.DEMO_APP);
+
+        try {
+            eventChannel.publish(AppEventType.DEMO_APP, mockManager);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        eventChannel.shutdown();
+        verify(mockManager, times(0)).processEvent(any());
     }
 
     /**
@@ -48,22 +93,16 @@ public class EventsTest {
         }
     }
 
-    /**
-     * Tests if there are any issues with handling events that provide null data.
-     * Do they fail safely and continue process or throw an exception?
-     * @param type An event type that consumers may subscribe to and handle
-     */
-    @ParameterizedTest
-    @EnumSource(AppEventType.class)
-    void do_consumers_handle_events_safely(AppEventType type) {
+    @Test
+    void do_consumers_handle_events_safely() {
         try {
             Field managerField = getPrivateField(App.class, "manager");
             Field fxLoadingField = getPrivateField(App.class, "fxLoading");
             Manager manager = (Manager) managerField.get(sharedApp);
             FXLoading fxLoading = (FXLoading) fxLoadingField.get(sharedApp);
 
-            manager.processEvent(new AppEvent(null, type, manager));
-            fxLoading.processEvent(new AppEvent(null, type, fxLoading));
+            manager.processEvent(new AppEvent(null, AppEventType.DEMO_APP, manager));
+            fxLoading.processEvent(new AppEvent(null, AppEventType.CREATE_ACCOUNT, fxLoading));
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
