@@ -1,5 +1,5 @@
 # The Project
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/NonIntelligent/JavaTradingClient/maven.yml)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/NonIntelligent/JavaTradingClient/autoTest.yml)
 ![Dynamic Regex Badge](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2FNonIntelligent%2FJavaTradingClient%2Frefs%2Fheads%2Fmain%2Fpom.xml&search=%3Cversion%3E(.*)%3C%2Fversion%3E&replace=%241&label=Version)
 [![codecov](https://codecov.io/github/NonIntelligent/JavaTradingClient/graph/badge.svg?token=W3FYGEAXNO)](https://codecov.io/github/NonIntelligent/JavaTradingClient)
 <p></p>
