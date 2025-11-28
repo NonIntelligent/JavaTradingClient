@@ -1,5 +1,4 @@
-name: Test build using Maven
-
+name: Test application
 on:
   push:
     paths-ignore:
