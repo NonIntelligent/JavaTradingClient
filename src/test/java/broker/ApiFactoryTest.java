@@ -1,6 +1,11 @@
 package broker;
 
 import org.junit.jupiter.api.*;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,15 +42,31 @@ class ApiFactoryTest {
         }
     }
 
-    /**
-     * TODO Requires a separate dependency to test the default case without changing written code
-     */
+    @Test
     void doesFactoryThrowOnUnimplementedBroker() {
+        final int MAX = Broker.values().length;
+
+        // Generate array of all Broker values including a new one that isn't implemented.
+        List<Broker> testEnums = new ArrayList<>();
+        for (Broker b : Broker.values()) {
+            testEnums.add(b);
+        }
+
+        Broker[] exceptionArray = new Broker[MAX + 1];
+
         // Replace "Broker.valueOf" method with an enum modification
-        try {
+        try (MockedStatic<Broker> brokerMock = Mockito.mockStatic(Broker.class)) {
+            Broker unimplemented = Mockito.mock(Broker.class);
+            Mockito.doReturn(MAX).when(unimplemented).ordinal();
+
+            // Return the new values list to cause an exception.
+            testEnums.add(unimplemented);
+            testEnums.toArray(exceptionArray);
+            brokerMock.when(Broker::values).thenReturn(exceptionArray);
+
             assertThrows(IllegalArgumentException.class, () ->
-                    ApiFactory.getApi(Broker.valueOf("new"), AccountType.DEMO,
-                            "test", "test"));
+                    ApiFactory.getApi(unimplemented, AccountType.DEMO,
+                            "test", "test"), "Exception thrown when attempting to create an API using an unimplemented Broker");
         } catch (Exception e) {
             e.printStackTrace();
         }
