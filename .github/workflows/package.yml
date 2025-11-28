@@ -1,0 +1,29 @@
+name: Build and package artifact using Maven
+
+on:
+  workflow_dispatch
+
+jobs:
+  publish-job:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup JDK 21
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+        architecture: x64
+        cache: maven
+    - name: Verify application
+      run: mvn -B verify -DskipTests -f pom.xml
+    - name: Create target directories
+      run: mkdir staging && mkdir staging\lib
+    - name: Include dependencies in package
+      run: copy target\*.jar staging && copy target\lib\* staging\lib
+    - name: Add mock chart data to package
+      run: copy target\classes\*.csv staging
+    - uses: actions/upload-artifact@v4
+      with:
+        name: JavaMarketTraderPackage
+        path: staging
