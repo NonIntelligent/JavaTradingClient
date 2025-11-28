@@ -303,7 +303,7 @@ public class Manager implements EventConsumer {
     @Override
     public void processEvent(AppEvent event) {
         if (event.data() == null) {
-            log.error("AppEvent data is NULL of type {}", event.type());
+            log.debug("AppEvent data is NULL of type {}", event.type());
             return;
         }
 
